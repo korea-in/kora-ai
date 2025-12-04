@@ -1,0 +1,10 @@
+| 목적         | 핵심 API                           |
+| ---------- | -------------------------------- |
+| 실적 분석      | fnlttSinglAcntAll                |
+| 기업 구조      | company.json                     |
+| 직원 구조      | empSttus.json                    |
+| 임원 및 지배구조  | exctvSttus.json, hyslrSttus.json |
+| 주요 주주      | majorStock.json                  |
+| 자본 변동      | alotMatter.json                  |
+| 사업부문       | bnstmgmt.json                    |
+| 이벤트(공시 전문) | list.json, document.xml          |
