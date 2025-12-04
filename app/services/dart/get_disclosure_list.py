@@ -1,12 +1,15 @@
-# get_dart_regular_reports.py
+# get_disclosure_list.py
 # 정기공시(A) 최신 보고서 조회 최종버전
 
 import os
 import requests
 from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv("../.env")
+# 프로젝트 루트의 .env 파일 로드
+env_path = Path(__file__).resolve().parents[3] / ".env"
+load_dotenv(env_path)
 API_KEY = os.getenv("DART_API_KEY")
 
 URL = "https://opendart.fss.or.kr/api/list.json"

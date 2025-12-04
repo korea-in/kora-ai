@@ -1,9 +1,14 @@
+# get_financials.py
+# 단일회사 전체 재무제표 조회
+
 import os
 import requests
+from pathlib import Path
 from dotenv import load_dotenv
 
-# 환경변수 로드
-load_dotenv("../../.env")
+# 프로젝트 루트의 .env 파일 로드
+env_path = Path(__file__).resolve().parents[3] / ".env"
+load_dotenv(env_path)
 
 # DART API KEY
 API_KEY = os.getenv("DART_API_KEY")

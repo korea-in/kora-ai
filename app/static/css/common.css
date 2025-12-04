@@ -1,0 +1,329 @@
+/* common.css */
+/* KORA AI 공통 스타일 */
+
+/* CSS 변수 정의 */
+:root {
+    --kora-primary: #0F172A;
+    --kora-secondary: #1E293B;
+    --kora-accent: #3B82F6;
+    --kora-accent-hover: #2563EB;
+    --kora-text: #F8FAFC;
+    --kora-text-muted: #94A3B8;
+    --kora-border: #334155;
+    --kora-success: #10B981;
+    --kora-error: #EF4444;
+    --kora-warning: #F59E0B;
+    
+    --transition-fast: 150ms;
+    --transition-normal: 200ms;
+    --transition-slow: 300ms;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* 기본 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: var(--kora-primary);
+    color: var(--kora-text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--kora-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--kora-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--kora-text-muted);
+}
+
+/* 선택 영역 스타일 */
+::selection {
+    background-color: var(--kora-accent);
+    color: var(--kora-text);
+}
+
+/* 링크 기본 스타일 */
+a {
+    color: var(--kora-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast) ease;
+}
+
+a:hover {
+    color: var(--kora-accent-hover);
+}
+
+/* 버튼 기본 스타일 */
+button {
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    outline: none;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 입력 필드 기본 스타일 */
+input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+}
+
+/* KORA 버튼 스타일 */
+.kora-btn-primary {
+    background-color: var(--kora-accent);
+    color: var(--kora-text);
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 12px 24px;
+    transition: all var(--transition-normal) ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kora-btn-primary:hover {
+    background-color: var(--kora-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.kora-btn-primary:active {
+    transform: translateY(0);
+}
+
+.kora-btn-secondary {
+    background-color: var(--kora-secondary);
+    color: var(--kora-text);
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 12px 24px;
+    border: 1px solid var(--kora-border);
+    transition: all var(--transition-normal) ease;
+}
+
+.kora-btn-secondary:hover {
+    background-color: var(--kora-border);
+}
+
+.kora-btn-social {
+    position: relative;
+    overflow: hidden;
+}
+
+.kora-btn-social::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.kora-btn-social:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* KORA 입력 필드 스타일 */
+.kora-input {
+    background-color: var(--kora-primary);
+    border: 1px solid var(--kora-border);
+    border-radius: 8px;
+    color: var(--kora-text);
+    padding: 12px 16px;
+    transition: all var(--transition-normal) ease;
+}
+
+.kora-input:focus {
+    border-color: var(--kora-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.kora-input::placeholder {
+    color: var(--kora-text-muted);
+}
+
+.kora-input.error {
+    border-color: var(--kora-error);
+}
+
+.kora-input.error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+/* KORA 체크박스 스타일 */
+.kora-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--kora-accent);
+    cursor: pointer;
+}
+
+/* 카드 스타일 */
+.kora-card {
+    background-color: var(--kora-secondary);
+    border: 1px solid var(--kora-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+}
+
+/* 로딩 스피너 */
+.kora-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--kora-text);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.5s ease forwards;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.5s ease forwards;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 토스트 알림 */
+.kora-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: var(--kora-text);
+    font-weight: 500;
+    box-shadow: var(--shadow-xl);
+    z-index: 9999;
+    animation: slideUp 0.3s ease;
+}
+
+.kora-toast.success {
+    background-color: var(--kora-success);
+}
+
+.kora-toast.error {
+    background-color: var(--kora-error);
+}
+
+.kora-toast.warning {
+    background-color: var(--kora-warning);
+}
+
+/* 반응형 유틸리티 */
+@media (max-width: 640px) {
+    .kora-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+}
+
+/* 포커스 링 유틸리티 */
+.focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+/* 텍스트 유틸리티 */
+.text-gradient {
+    background: linear-gradient(135deg, var(--kora-accent) 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
