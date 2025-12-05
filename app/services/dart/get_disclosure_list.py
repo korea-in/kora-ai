@@ -50,7 +50,7 @@ def get_latest_regular_report(corp_code):
 
 
 if __name__ == "__main__":
-    corp_code = "00126380"  # 삼성전자
+    corp_code = "00382199"  # 신한금융지주
     latest = get_latest_regular_report(corp_code)
 
     if latest:

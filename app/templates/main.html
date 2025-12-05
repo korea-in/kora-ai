@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}KORA AI - 기업 분석{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- 상단 네비게이션 바 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>KORA AI</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active">기업검색</a>
+                <a href="#" class="nav-link">분석보고서</a>
+                <a href="#" class="nav-link">관심목록</a>
+                <a href="#" class="nav-link">이용가이드</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span class="user-name">{{ user_name }}</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="profile-dropdown">
+                    <a href="#"><i class="fas fa-user-cog"></i> 내 정보</a>
+                    <a href="#"><i class="fas fa-history"></i> 분석 기록</a>
+                    <a href="#"><i class="fas fa-star"></i> 관심 기업</a>
+                    <hr>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="main-content-wrapper">
+        <!-- 중앙 검색 영역 -->
+        <div class="center-search-area">
+            <!-- 로고 및 헤더 -->
+            <div class="search-hero">
+                <div class="hero-logo">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h1>KORA AI</h1>
+                <p>AI 기반 실시간 기업 분석 리포트</p>
+            </div>
+
+            <!-- 시장 선택 -->
+            <div class="market-selector-compact">
+                <button class="market-chip active" data-market="kospi">
+                    <span>KOSPI</span>
+                </button>
+                <button class="market-chip" data-market="kosdaq">
+                    <span>KOSDAQ</span>
+                </button>
+            </div>
+
+            <!-- 검색 입력 -->
+            <div class="search-box-wrapper">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="company-search" placeholder="분석할 기업명을 입력하세요..." autocomplete="off">
+                    <button class="clear-btn" id="clear-search" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="search-results" id="search-results"></div>
+            </div>
+
+            <!-- 랜덤 추천 -->
+            <div class="random-recommend-section">
+                <div class="random-header">
+                    <span class="random-title"><i class="fas fa-lightbulb"></i> 이런 기업은 어떠세요?</span>
+                    <button class="random-refresh-btn" id="random-refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="random-chips-wrapper" id="random-chips-wrapper">
+                    <div class="random-chips" id="random-results"></div>
+                </div>
+            </div>
+
+            <!-- 요청사항 섹션 -->
+            <div class="request-section">
+                <div class="request-section-header">
+                    <h3><i class="fas fa-comment-dots"></i> AI에게 물어보세요</h3>
+                    <p>선택한 기업에 대해 궁금한 점을 질문해보세요</p>
+                </div>
+                
+                <!-- 빠른 요청 버튼들 (2열 그리드, 짧은 텍스트) -->
+                <div class="quick-actions">
+                    <button class="action-chip" data-request="재무 상태가 건전한지 분석해줘">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>재무 건전성 분석</span>
+                    </button>
+                    <button class="action-chip" data-request="투자 리스크가 있는지 알려줘">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>투자 리스크 분석</span>
+                    </button>
+                    <button class="action-chip" data-request="성장 가능성은 어떤지 전망해줘">
+                        <i class="fas fa-chart-line"></i>
+                        <span>성장 가능성 전망</span>
+                    </button>
+                    <button class="action-chip" data-request="배당금과 배당 성향 분석해줘">
+                        <i class="fas fa-coins"></i>
+                        <span>배당 정보 분석</span>
+                    </button>
+                    <button class="action-chip" data-request="최근 뉴스와 시장 반응 분석해줘">
+                        <i class="fas fa-newspaper"></i>
+                        <span>뉴스/시장 반응</span>
+                    </button>
+                    <button class="action-chip" data-request="경쟁사와 비교 분석해줘">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>경쟁사 비교</span>
+                    </button>
+                </div>
+
+                <!-- 직접 입력 -->
+                <div class="custom-input-wrapper">
+                    <div class="custom-input-box">
+                        <i class="fas fa-pen"></i>
+                        <input type="text" id="custom-request" placeholder="직접 질문을 입력하세요..." autocomplete="off">
+                        <button class="custom-submit-btn" id="custom-submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 요약 보고서 생성 버튼 -->
+            <div class="report-action">
+                <button class="generate-btn" id="generate-report" disabled>
+                    <i class="fas fa-file-alt"></i>
+                    <span>요약 보고서 생성</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 우측 실시간 인기 검색어 -->
+        <aside class="trending-sidebar">
+            <div class="trending-card">
+                <div class="trending-header">
+                    <div class="trending-title">
+                        <i class="fas fa-fire-alt"></i>
+                        <span>실시간 인기 기업</span>
+                    </div>
+                    <div class="trending-tabs">
+                        <button class="trending-tab active" data-market="kospi">KOSPI</button>
+                        <button class="trending-tab" data-market="kosdaq">KOSDAQ</button>
+                    </div>
+                </div>
+                
+                <div class="trending-list active" id="kospi-trending"></div>
+                <div class="trending-list" id="kosdaq-trending"></div>
+
+                <div class="trending-footer">
+                    <span class="update-time" id="update-time">방금 전 업데이트</span>
+                    <button class="refresh-trending" id="refresh-trending">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

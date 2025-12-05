@@ -1,0 +1,1143 @@
+===========================================
+KORA AI 개발 요청 기록
+===========================================
+
+-------------------------------------------
+[요청 #1] 2025-12-05 (금) 09:00
+-------------------------------------------
+📋 요청 내용:
+- 앞으로의 모든 요청 내용을 request_history.txt에 저장
+- 시간과 처리 방법 포함하여 정리
+
+🔧 처리 내용:
+1. request_history.txt 파일에 요청 기록 작성
+   - 요청 번호, 날짜, 요청 내용, 처리 내용 형식으로 정리
+   - 각 요청별 상세 처리 과정 문서화
+
+===========================================
+
+-------------------------------------------
+[요청 #2] 2025-12-05 (금) 09:15
+-------------------------------------------
+📋 요청 내용:
+- 어두운 배경 → 밝은 배경으로 변경
+- 신한은행 SOL 앱 스타일 참고 (파란색 그라데이션)
+- 백엔드 최소화, 기본 구조부터 구축
+- 회원가입/로그인 화면 구현
+- 메인 검색 화면 구현:
+  * 상단 메뉴바 (좌측: 아이콘/메뉴, 우측: 프로필)
+  * KOSPI/KOSDAQ 시장 선택 버튼
+  * 회사명 검색 입력란 (자동완성)
+  * 랜덤 5개 기업 추천 버튼
+  * 빠른 요청 버튼 (재무 건전성 등)
+  * 요약 보고서 생성 버튼
+  * 인기 회사 목록 (KOSPI/KOSDAQ 각 10개)
+- 포인트 색상에 그라데이션 활용
+
+🔧 처리 내용:
+1. Flask 앱 기본 구조 생성
+   - run.py: 앱 실행 진입점
+   - app/__init__.py: Flask 앱 팩토리 패턴 적용
+   - app/routes/main.py: 페이지 라우팅 (/, /auth, /main, /login, /signup, /logout)
+   - app/routes/company.py: 회사 검색 API (/api/companies/search, /random, /popular)
+
+2. 템플릿 파일 생성
+   - templates/base.html: 기본 레이아웃
+   - templates/auth.html: 로그인/회원가입 페이지
+   - templates/main.html: 메인 검색 화면
+
+3. 스타일 및 스크립트 파일 생성
+   - static/css/style.css: 신한 SOL 스타일 디자인 (밝은 배경 #F5F8FF, 파란색 그라데이션)
+   - static/js/app.js: 검색, 추천, 선택 기능 구현
+
+4. 의존성 관리
+   - requirements.txt 업데이트 (Flask, python-dotenv, requests)
+
+5. 서버 실행 확인
+   - http://127.0.0.1:5000 에서 정상 작동 확인
+
+-------------------------------------------
+[요청 #3] 2025-12-05 (금) 10:00
+-------------------------------------------
+📋 요청 내용:
+1) 랜덤 회사 추천: 버튼 클릭 → 10초마다 자동 새로고침
+   - 깜빡임 없이 스르륵 사라지는 페이드 애니메이션
+
+2) PC 검색 화면: ChatGPT 스타일로 변경
+   - 검색 입력란을 중앙에 좁은 영역으로 배치
+
+3) 인기 기업 목록: 네이버 실시간 검색어 스타일
+   - 조회수 표시 (1,000회 이상은 K로 환산)
+
+🔧 처리 내용:
+1. main.html 전체 레이아웃 변경
+   - ChatGPT 스타일 중앙 검색 레이아웃 적용
+   - 검색 히어로 섹션 (로고 + 타이틀 + 검색박스)
+   - 시장 선택을 컴팩트한 칩 버튼으로 변경
+   - 랜덤 추천 섹션에 타이머 표시 추가
+
+2. 네이버 스타일 트렌딩 사이드바 구현
+   - KOSPI/KOSDAQ 탭 전환 기능
+   - 순위 번호 + 기업명 + 조회수 레이아웃
+   - TOP 3 순위에 그라데이션 배지 적용
+
+3. style.css 업데이트
+   - .center-search-area: 중앙 배치 검색 영역
+   - .search-hero: 히어로 섹션 스타일
+   - .search-box: ChatGPT 스타일 검색박스
+   - .random-chip: 랜덤 추천 칩 + 페이드 애니메이션
+   - .trending-sidebar: 네이버 스타일 사이드바
+   - .trending-item: 순위 아이템 스타일
+   - .trending-views: 조회수 표시 스타일
+
+4. app.js 업데이트
+   - startRandomRefresh(): 10초 자동 새로고침 타이머
+   - loadRandomCompanies(): 페이드 아웃/인 애니메이션 적용
+   - formatViewCount(): 1000 이상 K 변환 함수
+   - generateViewCount(): 데모용 조회수 생성
+   - displayTrendingCompanies(): 조회수 포함 렌더링
+   - 트렌딩 탭 전환 기능 추가
+
+-------------------------------------------
+[요청 #4] 2025-12-05 (금) 10:30
+-------------------------------------------
+📋 요청 내용:
+1) 회사 선택 시 하단 팝업(Toast) 제거
+2) 요청사항과 회사추천 영역 분리 - 요청사항에 제목 추가
+3) 직접입력 버튼 추가 (사용자가 직접 질문 입력 가능)
+4) 요청사항 버튼 텍스트를 문장형으로 변경 (생성형 AI 스타일)
+   - "재무 건전성" → "이 회사의 재무 상태가 건전한지 분석해줘"
+5) 검색 영역과 실시간 검색 순위 높이 동일하게 맞춤
+6) 새로고침 시간: 10초 → 5초로 변경
+7) 남은초 표시 제거, 새로고침 버튼으로 대체
+   - 버튼 클릭 시 즉시 새로고침 + 타이머 초기화
+
+🔧 처리 내용:
+1. main.html 수정
+   - Toast 팝업 HTML 제거
+   - 요청사항 섹션에 헤더 추가 (.request-section-header)
+     * 제목: "AI에게 물어보세요"
+     * 부제: "선택한 기업에 대해 궁금한 점을 질문해보세요"
+   - 직접 입력 박스 추가 (.custom-input-wrapper)
+   - 버튼 텍스트 문장형으로 변경
+   - 랜덤 추천 타이머 → 새로고침 버튼으로 변경
+
+2. style.css 수정
+   - .main-content-wrapper: align-items: flex-start 적용 (높이 맞춤)
+   - .request-section: 새 섹션 스타일 추가
+   - .request-section-header: 헤더 스타일
+   - .quick-actions: flex-direction: column으로 변경 (세로 배치)
+   - .action-chip: 문장형 텍스트에 맞게 스타일 조정
+   - .custom-input-wrapper, .custom-input-box: 직접 입력 스타일
+   - .random-refresh-btn: 새로고침 버튼 스타일
+   - Toast 관련 스타일 제거
+
+3. app.js 수정
+   - REFRESH_INTERVAL: 10000 → 5000 (5초)
+   - Toast 관련 코드 모두 제거
+   - randomRefreshBtn 이벤트 핸들러 추가
+     * 즉시 새로고침 + 인터벌 재시작
+   - 직접 입력 기능 추가
+     * customRequestInput, customSubmitBtn 핸들러
+     * handleCustomSubmit() 함수
+   - 선택한 요청 버튼 클릭 시 직접입력란에 텍스트 복사
+
+-------------------------------------------
+[요청 #5] 2025-12-05 (금) 11:00
+-------------------------------------------
+📋 요청 내용:
+1) 요청사항 버튼이 세로로 너무 길어서 레이아웃 개선 필요
+2) 회사추천에서 회사명이 긴 경우 줄바꿈 방지 (한 줄 유지)
+   - 화면 흔들림/다른 객체 움직임 방지
+3) 페이지별 CSS/JS 파일 분리
+   - 공통 스타일은 style.css
+   - 해당 화면 전용은 별도 파일 (auth.css/auth.js, main.css/main.js)
+   - 파일명, CSS명, JS명 일치
+4) HTML 내 인라인 스타일/스크립트 최소화
+
+🔧 처리 내용:
+1. CSS 파일 분리
+   - static/css/style.css: 공통/베이스 스타일만 유지
+     * CSS 변수, 리셋, 스크롤바, 공통 애니메이션
+   - static/css/auth.css: 로그인/회원가입 페이지 전용
+     * .auth-container, .auth-card, .auth-tabs 등
+   - static/css/main.css: 메인 검색 페이지 전용
+     * .navbar, .main-content-wrapper, .search-box 등
+
+2. JS 파일 분리
+   - static/js/app.js: 공통 유틸리티 (최소화)
+   - static/js/auth.js: 로그인/회원가입 페이지 전용
+     * 탭 전환 기능
+   - static/js/main.js: 메인 검색 페이지 전용
+     * 검색, 추천, 트렌딩 기능
+
+3. 템플릿 수정
+   - base.html: 공통 app.js 로드 제거 (불필요)
+   - auth.html: {% block extra_css/js %}로 auth.css/js 로드
+     * 인라인 스크립트 제거
+   - main.html: {% block extra_css/js %}로 main.css/js 로드
+
+4. 요청사항 버튼 레이아웃 개선
+   - .quick-actions: 2열 그리드로 변경 (grid-template-columns: repeat(2, 1fr))
+   - .action-chip: 짧은 텍스트 버전으로 변경
+     * "이 회사의 재무 상태가..." → "재무 건전성 분석"
+   - 세로 길이 대폭 감소
+
+5. 회사명 줄바꿈 방지
+   - .random-chip: white-space: nowrap, max-width: 140px, text-overflow: ellipsis
+   - .random-chips: min-height: 44px (고정 높이로 레이아웃 흔들림 방지)
+
+-------------------------------------------
+[요청 #6] 2025-12-05 (금) 11:30
+-------------------------------------------
+📋 요청 내용:
+1) 포트를 80으로 변경
+2) 검색 영역과 인기 차트가 화면 중앙에 정확히 배치되도록 수정
+3) 로그인 화면 레이아웃 변경:
+   - 좌측: 투자/리포트 관련 전문적인 이미지/일러스트
+   - 우측: 로그인 폼 영역
+   - 참고 이미지 제공 (비슷한 스타일로 구현)
+
+🔧 처리 내용:
+1. run.py 수정
+   - port: 5000 → 80
+   - host: '0.0.0.0' 추가 (외부 접근 허용)
+
+2. main.css 수정
+   - .main-content-wrapper: justify-content: center 추가
+   - max-width: 1400px → 1200px (더 컴팩트하게)
+   - .center-search-area: flex: 0 1 600px로 조정
+   - 두 영역이 화면 정중앙에 배치되도록 개선
+
+3. auth.css 전면 재작성 (Split Layout)
+   - .auth-container: flex 레이아웃 (좌측 + 우측)
+   
+   좌측 영역 (.auth-illustration):
+   - 파란색 그라데이션 배경
+   - 떠다니는 도형 애니메이션 (.floating-shapes)
+   - 메인 아이콘 + 제목 + 설명
+   - 기능 리스트 (DART 분석, 뉴스 분석, 리포트 생성)
+   
+   우측 영역 (.auth-form-section):
+   - 흰색 배경
+   - "환영합니다!" 타이틀
+   - 로그인/회원가입 탭
+   - 둥근 입력 필드
+   - 소셜 로그인 버튼
+   
+4. auth.html 전면 재작성
+   - 좌측 일러스트 영역 HTML 추가
+   - 우측 폼 영역으로 기존 폼 이동
+   - 반응형: 1024px 이하에서 좌측 영역 숨김
+
+-------------------------------------------
+[요청 #7] 2025-12-05 (금) 12:00
+-------------------------------------------
+📋 요청 내용:
+1) 로그인 화면을 전체 화면이 아닌 중앙 정렬된 좁은 영역으로 변경
+2) KORA AI 약어 설명 추가:
+   - "KOSPI · KOSDAQ · Research · Analyze"
+   - KORA AI 로고 위에 작게 표시
+   - KO, KO, R, A 부분은 강조 색상
+   - 나머지 부분은 옅은 회색
+
+🔧 처리 내용:
+1. auth.css 수정
+   - .auth-page 래퍼 추가: 전체 화면 배경
+     * 중앙 정렬 (display: flex, align-items/justify-content: center)
+     * 그라데이션 배경 + 장식용 radial-gradient
+   - .auth-container: 카드 형태로 변경
+     * max-width: 1000px
+     * border-radius, box-shadow 적용
+     * 전체 화면이 아닌 중앙 카드 레이아웃
+
+2. 브랜드 약어 스타일 추가
+   - .brand-acronym: KORA AI 위 약어 설명
+     * font-size: 11px, letter-spacing: 1px
+   - .brand-acronym .highlight: KO, KO, R, A 강조
+     * color: var(--primary-blue)
+     * font-weight: 700
+   - .brand-acronym .dim: 나머지 텍스트 옅게
+     * color: var(--text-tertiary)
+     * font-weight: 400
+
+3. auth.html 수정
+   - .auth-page 래퍼 div 추가
+   - 브랜드 약어 HTML 추가:
+     <span class="highlight">KO</span><span class="dim">SPI · </span>
+     <span class="highlight">KO</span><span class="dim">SDAQ · </span>
+     <span class="highlight">R</span><span class="dim">esearch · </span>
+     <span class="highlight">A</span><span class="dim">nalyze</span>
+
+4. 반응형 조정
+   - 900px 이하: 세로 배치 (flex-direction: column)
+   - 540px 이하: 좌측 일러스트 숨김, 폼만 표시
+
+-------------------------------------------
+[요청 #8] 2025-12-05 (금) 12:15
+-------------------------------------------
+📋 요청 내용:
+1) 로그인 화면을 다시 전체 화면 레이아웃으로 복원
+2) 아이콘과 위 텍스트 사이 여백이 너무 좁아서 개선 필요
+
+🔧 처리 내용:
+1. auth.css 수정 - 전체 화면 레이아웃 복원
+   - .auth-container: min-height: 100vh 복원
+   - .auth-page 래퍼 제거
+   - 카드 스타일 제거 (max-width, border-radius, box-shadow)
+
+2. 여백 개선
+   - .brand-acronym: margin-bottom: 16px (기존 8px에서 증가)
+   - .logo-icon: margin-bottom: 20px (기존 14px에서 증가)
+   - .auth-logo: margin-bottom: 40px (기존 32px에서 증가)
+   - .illustration-icon: margin-bottom: 32px (기존 24px에서 증가)
+   - .illustration-subtitle: margin-bottom: 48px (기존 32px에서 증가)
+
+3. 전체적인 요소 크기 조정
+   - .logo-icon: 64px (기존 52px)
+   - .illustration-icon: 120px (기존 100px)
+   - .illustration-title: 32px (기존 26px)
+   - .auth-welcome: 28px (기존 24px)
+   - 입력 필드 패딩 증가: 16px (기존 14px)
+
+4. auth.html 수정
+   - .auth-page 래퍼 div 제거
+   - 직접 .auth-container로 시작
+
+-------------------------------------------
+[요청 #9] 2025-12-05 (금) 12:30
+-------------------------------------------
+📋 요청 내용:
+- 검색 화면의 main-content-wrapper에 align-items: center 적용
+- PC 버전에서 요소들을 세로 중앙 정렬
+
+🔧 처리 내용:
+1. main.css 수정
+   - .main-content-wrapper: align-items: flex-start → center
+   - 검색 영역과 인기 기업 사이드바가 세로 중앙 정렬됨
+
+-------------------------------------------
+[요청 #10] 2025-12-05 (금) 12:45
+-------------------------------------------
+📋 요청 내용:
+- 회사 추천 영역에서 x축으로 넘치는 경우 숨김 처리
+- 넘치는 부분이 양쪽에서 스르륵 사라지는 것처럼 페이드 효과 적용
+
+🔧 처리 내용:
+1. main.css 수정
+   - .random-chips-wrapper: 새로운 래퍼 추가
+     * position: relative, overflow: hidden
+   - .random-chips-wrapper::before: 왼쪽 페이드 효과
+     * linear-gradient(to right, 배경색 → transparent)
+     * opacity: 0 기본, has-overflow-left 클래스로 활성화
+   - .random-chips-wrapper::after: 오른쪽 페이드 효과
+     * linear-gradient(to left, 배경색 → transparent)
+     * opacity: 0 기본, has-overflow-right 클래스로 활성화
+   - .random-chips: 가로 스크롤로 변경
+     * flex-wrap: nowrap
+     * overflow-x: auto
+     * scrollbar 숨김 (모든 브라우저)
+
+2. main.html 수정
+   - random-chips div를 random-chips-wrapper로 감쌈
+
+3. main.js 수정
+   - updateRandomChipsOverflow(): 오버플로우 상태 체크 함수 추가
+     * scrollLeft 위치에 따라 좌/우 페이드 활성화
+   - displayRandomResults()에서 호출
+   - scroll 이벤트 리스너 추가
+
+-------------------------------------------
+[요청 #11] 2025-12-05 (금) 13:00
+-------------------------------------------
+📋 요청 내용:
+- 메인 화면이 너무 횡해 보여서 더 차보이게 개선
+- 요소 추가, 사이즈 키우기, 배치 개선
+
+🔧 처리 내용:
+1. 히어로 섹션 강화
+   - .hero-badge 추가: "AI-Powered Analysis" 뱃지
+   - .hero-logo: 64px → 80px, glow 효과 추가
+   - .search-hero h1: 28px → 36px
+   - .hero-subtitle: 부제목 추가 (16px, font-weight: 500)
+   - .hero-description: 상세 설명 추가
+
+2. 통계 뱃지 섹션 추가 (.stats-badges)
+   - "2,500+ 분석 가능 기업"
+   - "실시간 데이터 업데이트"
+   - "GPT-4 AI 분석 엔진"
+   - 각 뱃지에 아이콘 + 값 + 라벨 구성
+   - hover 시 transform + border 강조
+
+3. 시장 선택 버튼 개선
+   - 아이콘 추가 (fas fa-chart-bar, fa-chart-area)
+   - 패딩 증가: 10px 24px → 12px 28px
+
+4. 검색박스 개선
+   - max-width: 560px → 580px
+   - 패딩 증가, 더 큰 그림자 효과
+
+5. 사이드바에 정보 카드 추가 (.info-card)
+   - "분석 데이터 소스" 제목
+   - DART 전자공시, 네이버 뉴스, 재무제표 데이터
+   - 각 항목 hover 효과
+
+6. 보고서 버튼 힌트 추가 (.report-hint)
+   - "기업을 선택하고 질문을 입력하면 활성화됩니다"
+
+7. 반응형 스타일 업데이트
+   - 768px 이하에서 요소 크기 축소
+   - info-card 숨김 처리
+
+-------------------------------------------
+[요청 #12] 2025-12-05 (금) 13:15
+-------------------------------------------
+📋 요청 내용:
+- 요청 #11 변경사항 원복
+
+🔧 처리 내용:
+1. main.html 원복
+   - hero-badge, stats-badges, info-card 제거
+   - hero-subtitle, hero-description, report-hint 제거
+   - market-chip 아이콘 제거
+
+2. main.css 원복
+   - .hero-badge, .stats-badges, .stat-badge 스타일 제거
+   - .hero-subtitle, .hero-description 스타일 제거
+   - .info-card, .data-source 스타일 제거
+   - .report-hint 스타일 제거
+   - .hero-logo: 80px → 64px
+   - .search-hero h1: 36px → 28px
+   - .market-chip: 아이콘 관련 스타일 제거
+   - .search-box-wrapper: 580px → 560px
+   - 반응형 스타일 원복
+
+-------------------------------------------
+[요청 #13] 2025-12-05 (금) 13:30
+-------------------------------------------
+📋 요청 내용:
+- Firebase CLI 명령어 및 설정 가이드 정리
+- config/firebase.txt 파일에 저장
+
+🔧 처리 내용:
+1. config 폴더 생성
+
+2. config/firebase.txt 파일 생성
+   - Firebase Console 기반 설정 가이드
+   - 서비스 계정 키 생성 방법
+   - Python Admin SDK 설치
+   - 환경 변수 설정
+   - 주의사항 (보안)
+   - 체크리스트
+
+-------------------------------------------
+[요청 #14] 2025-12-05 (금) 13:45
+-------------------------------------------
+📋 요청 내용:
+- Firebase 연동 구현
+- serviceAccountKey.json 파일 제공됨
+
+🔧 처리 내용:
+1. .gitignore 업데이트
+   - serviceAccountKey.json 추가
+   - firebase-key.json 추가
+   - .env, .env.local, .env.production 추가
+
+2. config/env.sample 생성
+   - Flask 환경 변수
+   - Firebase Admin SDK 설정
+   - Firebase Web Config 설정
+
+3. requirements.txt 업데이트
+   - firebase-admin==6.2.0 추가
+
+4. app/services/firebase_service.py 생성
+   - Firebase Admin SDK 초기화
+   - 인증 함수들 (create_user, verify_id_token 등)
+   - Firestore 데이터 함수들
+   - 세션 기반 인증 데코레이터
+
+5. app/__init__.py 업데이트
+   - dotenv 로드
+   - Firebase 초기화 호출
+   - auth_bp 블루프린트 등록
+
+6. app/routes/auth.py 생성 (새 파일)
+   - /auth/signup: 회원가입 API
+   - /auth/login: 로그인 API
+   - /auth/logout: 로그아웃 API
+   - /auth/check: 로그인 상태 확인 API
+
+7. app/routes/main.py 업데이트
+   - 새 인증 시스템과 연동
+   - 세션 체크 로직 추가
+
+8. app/services/__init__.py 생성
+
+-------------------------------------------
+[요청 #15] 2025-12-05 (금) 14:00
+-------------------------------------------
+📋 요청 내용:
+- 회원가입 시 Firebase에 저장
+- 회원정보 구조를 별도 class로 관리
+- 데이터 구조 정보는 별도 파일로 분리
+
+🔧 처리 내용:
+1. app/models/ 폴더 생성 및 모델 클래스 정의
+
+2. app/models/user.py - User 모델
+   - uid, email: 필수 필드
+   - display_name, photo_url, phone_number: 프로필 정보
+   - analysis_count, favorite_companies: 앱 관련 정보
+   - subscription_tier, daily_analysis_limit: 구독/등급
+   - email_notifications, push_notifications: 설정
+   - created_at, updated_at, last_login_at: 타임스탬프
+   - is_active, is_verified: 계정 상태
+   - to_dict(), from_dict(), create_new() 메서드
+
+3. app/models/analysis.py - AnalysisHistory 모델
+   - user_id, company_code, company_name, market: 필수 필드
+   - request_type, request_text: 분석 정보
+   - result_summary, result_full: 결과
+   - analysis_duration_ms, tokens_used: 메타데이터
+   - status, error_message: 상태
+
+4. app/models/company.py - PopularCompany 모델
+   - market, company_code, company_name: 필수 필드
+   - view_count, search_count, analysis_count: 통계
+   - format_view_count(): 1000 이상 K 표시
+
+5. app/models/__init__.py - 모델 export
+
+6. app/services/firebase_service.py 업데이트
+   - 모델 클래스 임포트 및 사용
+   - create_user(): User 모델 반환
+   - get_user_by_uid(), get_user_by_email(): User 반환
+   - update_user(), update_last_login(): 업데이트 함수
+   - increment_analysis_count(): 분석 횟수 증가
+   - add_favorite_company(), remove_favorite_company()
+   - save_analysis_history(): AnalysisHistory 모델 사용
+   - get_popular_companies(): PopularCompany 반환
+
+7. app/routes/auth.py 업데이트
+   - User 모델 정보 활용
+   - 프로필 API 추가 (/auth/profile)
+   - 응답에 subscription_tier, analysis_count 등 포함
+
+-------------------------------------------
+[요청 #16] 2025-12-05 (금) 14:30
+-------------------------------------------
+📋 요청 내용:
+- 네이버 뉴스 검색 API 연동
+- services 폴더를 용도별로 구조화 (firebase, naver, dart)
+
+🔧 처리 내용:
+1. services 폴더 구조 재편성
+   app/services/
+   ├── __init__.py          # 전체 export
+   ├── firebase/
+   │   ├── __init__.py      # Firebase 서비스 export
+   │   ├── auth_service.py  # 인증, 사용자 관리
+   │   └── firestore_service.py  # Firestore 데이터 관리
+   ├── naver/
+   │   ├── __init__.py      # Naver API export
+   │   └── news_service.py  # 뉴스 검색 API
+   └── dart/
+       ├── __init__.py      # DART API export (예정)
+       └── disclosure_service.py  # 공시 조회 (TODO)
+
+2. app/services/naver/news_service.py 생성
+   - NaverNewsItem 데이터 클래스
+     * title, original_link, link, description, pub_date
+     * clean_title, clean_description (HTML 태그 제거)
+     * source (언론사 추출)
+   - NaverNewsResponse 데이터 클래스
+     * total, start, display, items
+     * success, error_message
+   - search_news(): 뉴스 검색 함수
+     * query, display(1-100), start(1-1000), sort(sim/date)
+   - search_company_news(): 기업 뉴스 검색
+   - check_api_status(): API 상태 확인
+
+3. 기존 firebase_service.py 분리
+   - auth_service.py: 인증, 사용자 관리 함수
+   - firestore_service.py: 분석 기록, 인기 기업 함수
+
+4. 관련 파일 import 경로 수정
+   - app/__init__.py
+   - app/routes/auth.py
+   - app/services/__init__.py
+
+5. config/env.sample 업데이트
+   - NAVER_CLIENT_ID, NAVER_CLIENT_SECRET 추가
+   - DART_API_KEY 추가
+   - OPENAI_API_KEY 추가
+
+6. 기존 firebase_service.py 파일 삭제
+
+참고: 네이버 뉴스 검색 API
+https://developers.naver.com/docs/serviceapi/search/news/news.md
+- 하루 25,000회 호출 한도
+- X-Naver-Client-Id, X-Naver-Client-Secret 헤더 필요
+
+-------------------------------------------
+[요청 #17] 2025-12-05 (금) 15:00
+-------------------------------------------
+📋 요청 내용:
+- PER, PBR, 배당수익률, RSI, MFI 대표 지수 추가
+
+🔧 처리 내용:
+1. app/services/krx/stock_service.py에 함수 추가
+   - get_valuation(): PER, PBR, EPS, BPS, 배당수익률, 주당배당금
+   - calculate_rsi(): RSI(14) 계산 및 신호 판단
+     * > 70: 과매수, < 30: 과매도, >= 50: 강세, < 50: 약세
+   - calculate_mfi(): MFI(14) 계산 및 신호 판단
+     * > 80: 과매수, < 20: 과매도, >= 50: 자금유입, < 50: 자금유출
+   - get_technical_indicators(): RSI, MFI, 밸류에이션 종합 조회
+
+2. app/services/krx/__init__.py 업데이트
+   - get_valuation, calculate_rsi, calculate_mfi, 
+     get_technical_indicators export 추가
+
+3. 테스트 코드 추가 (신한금융지주 예시)
+
+테스트 결과 (신한금융지주):
+- PER: 9.48, PBR: 0.71, 배당수익률: 2.7%
+- RSI(14): 56.49 (강세), MFI(14): 58.9 (자금 유입)
+
+-------------------------------------------
+[요청 #18] 2025-12-05 (금) 15:30
+-------------------------------------------
+📋 요청 내용:
+- GPT-4o API 연동 가이드 및 서비스 모듈 생성
+- OpenAI 계정 생성, API Key 발급, 결제 설정 가이드
+
+🔧 처리 내용:
+1. app/services/openai/ 폴더 생성
+   - __init__.py: 서비스 export
+   - analysis_service.py: GPT-4o 분석 서비스
+
+2. 주요 함수 구현
+   - chat_completion(): 기본 GPT 호출
+   - analyze_company(): 기업 종합 분석
+   - analyze_financials(): 재무제표 분석
+   - analyze_news_sentiment(): 뉴스 감성 분석
+   - summarize_disclosure(): 공시 요약
+   - generate_investment_report(): 종합 투자 보고서
+
+3. requirements.txt 업데이트
+   - openai>=1.0.0 추가
+
+4. OpenAI API 연동 가이드 제공
+   - platform.openai.com 계정 생성
+   - API Key 발급 방법
+   - 결제 설정 (선불 $10 충전)
+   - 사용량 제한 설정
+
+-------------------------------------------
+[요청 #19] 2025-12-05 (금) 16:00
+-------------------------------------------
+📋 요청 내용:
+- GPT 응답을 JSON 구조화하여 화면에 렌더링
+- 적정주가, 뉴스감정평가, 투자점수, 평가요약, 상세평가 포함
+
+🔧 처리 내용:
+1. analysis_service.py 전면 개편
+   - response_format="json_object" 모드 사용
+   - 구조화된 JSON 응답 스키마 정의
+
+2. JSON 응답 구조
+   - fair_price: 적정주가
+   - fair_price_reason: 산출 근거
+   - investment_score: 투자점수 (0~100)
+   - news_sentiments: 뉴스 감성 평가 (3개)
+     * title, score, sentiment, summary
+   - evaluation_summary: 평가 요약 (5문장)
+   - detail_key_list: 상세 평가 키 목록
+   - detail_evaluations: 키별 상세 내용
+
+3. 새로운 JSON 함수 추가
+   - generate_analysis_report(): 종합 분석 (JSON)
+   - analyze_news_sentiment_json(): 뉴스 감성 (JSON)
+   - calculate_fair_price_json(): 적정주가 (JSON)
+   - chat_completion_json(): JSON 파싱 래퍼
+
+-------------------------------------------
+[요청 #20] 2025-12-05 (금) 16:30
+-------------------------------------------
+📋 요청 내용:
+- RAG 형식으로 모든 데이터(DART, News, KRX)를 GPT에 전송
+- 요약 보고서 생성 버튼 클릭 시 보고서 페이지로 이동
+- 보고서 페이지 구현 (main_page_req.txt 참고)
+
+🔧 처리 내용:
+1. app/services/report_service.py 생성
+   - collect_all_data(): KRX + DART + 뉴스 통합 수집
+   - generate_full_report(): 데이터 수집 + AI 분석
+   - request_ai_analysis(): GPT-4o 분석 요청
+   - format_data_for_gpt(): 토큰 최적화 포맷팅
+
+2. app/routes/report.py 생성
+   - /report: 보고서 페이지
+   - /api/report/generate: 보고서 생성 API
+   - /api/report/data: 데이터만 수집 API
+   - /api/report/analyze: AI 분석 API
+   - /api/report/chat: AI 채팅 API
+   - /api/report/price-history/<ticker>: 차트 데이터 API
+
+3. app/templates/report.html 생성 (10개 섹션)
+   - 핵심 요약 카드 (현재가, 적정주가, 투자점수, 투자의견)
+   - 기업 기본 정보 테이블
+   - 주가 차트 (1년 추이 + 이동평균 + AI 예측 점선)
+   - 기술적 지표 (RSI, MFI, 이동평균)
+   - 밸류에이션 (PER, PBR, EPS, BPS, 배당수익률)
+   - 뉴스 분석 (감성 점수 + 상위 뉴스)
+   - AI 종합 평가 (요약 + 점수 브레이크다운)
+   - AI 상세 평가 (아코디언)
+   - 가격 예측 (3/6/12개월)
+   - 공시 정보 + DART 원본 링크
+
+4. app/static/css/report.css 생성
+   - 보고서 전용 스타일
+   - Chart.js 차트 스타일
+   - PC 전용 AI 채팅 사이드바
+
+5. app/static/js/report.js 생성
+   - 데이터 로딩 및 표시 로직
+   - Chart.js 차트 생성
+   - AI 채팅 기능 (PC 전용)
+
+6. app/routes/company.py 업데이트
+   - /api/companies/corp-code: DART corp_code 조회 API
+   - DART 기업 목록 캐싱
+
+7. main.js 업데이트
+   - 요약 보고서 생성 버튼 → 보고서 페이지 연결
+
+-------------------------------------------
+[요청 #21] 2025-12-05 (금) 17:00
+-------------------------------------------
+📋 요청 내용:
+1) 로딩 화면 개선: 동적 메시지 20~30개, 문구 자동 변경
+2) 완료 후 섹션별 순차 로딩 애니메이션 (촤르륵 효과)
+3) PDF 다운로드 기능 추가
+4) 로그인 비밀번호 bcrypt 해시 암호화
+
+🔧 처리 내용:
+1. 로딩 메시지 30개 추가 (report.js)
+   - "기업 정보를 확인하고 있어요..."
+   - "DART에서 공시 데이터를 수집하고 있어요..."
+   - "KORA AI가 요약 보고서를 작성하고 있어요..."
+   - 2초마다 자동 변경 + 페이드 애니메이션
+
+2. 섹션 순차 로딩 애니메이션 (report.css)
+   - @keyframes sectionReveal
+   - 150ms 간격으로 아래→위 슬라이드
+   - revealSections() 함수
+
+3. PDF 다운로드 기능 (html2pdf.js)
+   - 헤더에 "PDF 저장" 버튼 추가
+   - downloadPDF() 함수
+   - A4 사이즈, 고품질 이미지
+   - 파일명: KORA_AI_기업명_분석보고서_날짜.pdf
+
+4. bcrypt 비밀번호 해시 암호화
+   - requirements.txt: bcrypt>=4.0.0 추가
+   - app/models/user.py 업데이트:
+     * hash_password(): bcrypt 12라운드 해시
+     * verify_password(): 해시 검증
+     * password_hash 필드 추가
+     * set_password(), verify_password() 메서드
+   - app/services/firebase/auth_service.py 업데이트:
+     * create_user(): 비밀번호 해시 저장
+     * verify_user_password(): 해시 검증 함수
+   - app/routes/auth.py 업데이트:
+     * 로그인 시 bcrypt 해시 검증
+
+-------------------------------------------
+[요청 #22] 2025-12-05 (금) 17:30
+-------------------------------------------
+📋 요청 내용:
+- 요청 기록을 request_history.txt에 날짜/시간과 함께 저장
+- prompt 파일에 기록 저장 지침 추가
+- 기존 요청에도 시간 추가
+
+🔧 처리 내용:
+1. prompt 파일 업데이트
+   - 21번 지침 추가: "사용자의 요청과 답변을 정리하여 날짜와 시간과 함께 request_history.txt에 저장할 것"
+
+2. request_history.txt 업데이트
+   - 기존 요청 #1~#16에 시간 추가
+   - 요청 #17~#22 신규 추가 (시간 포함)
+   - 통일된 형식: [요청 #N] YYYY-MM-DD (요일) HH:MM
+
+-------------------------------------------
+[요청 #23] 2025-12-05 (금) 18:00
+-------------------------------------------
+📋 요청 내용:
+1) 검색 입력란 오른쪽 버튼 제거 (불필요)
+2) 요약 보고서 생성 시 필수 파라미터 오류 수정
+3) 로딩 화면 미니멀하게 개선 (작은 글씨, 트렌디)
+4) 새로고침 버튼 rotate 애니메이션 제거
+5) 로딩 스피너 제거, "보고서를 불러오고 있어요" 문구로 변경
+
+🔧 처리 내용:
+1. main.html 수정
+   - search-submit-btn 버튼 제거
+
+2. app/routes/report.py 수정
+   - corp_code를 선택적 파라미터로 변경
+   - 필수 파라미터: company_name, ticker만
+   - 에러 메시지: "기업명과 종목코드가 필요합니다"
+
+3. app/services/report_service.py 수정
+   - corp_code가 있을 때만 DART 데이터 수집
+   - 없으면 errors에 안내 메시지 추가
+
+4. report.html 로딩 화면 미니멀화
+   - 아이콘, 스피너, 프로그레스바 제거
+   - 기업명 + 로딩 메시지 + 도트 애니메이션만
+
+5. report.css 로딩 스타일 개선
+   - 폰트 크기 축소 (0.875rem, 0.8125rem)
+   - 로딩 도트 애니메이션 (.loading-dots)
+   - 깔끔하고 미니멀한 디자인
+
+6. main.js, report.js 수정
+   - spinning 클래스 관련 코드 제거
+   - 로딩 메시지 7개로 간소화
+
+-------------------------------------------
+[요청 #24] 2025-12-05 (금) 18:15
+-------------------------------------------
+📋 요청 내용:
+1) 로그인 오류 디버깅
+2) 로그인 실패 시 "아이디와 비밀번호를 확인하라" 메시지 표시
+3) 자동 로그인 기능 추가
+4) 비밀번호 초기화 기능 (이메일+이름으로 인증 후 즉시 변경)
+
+🔧 처리 내용:
+1. auth.html 업데이트
+   - Form action 속성 제거 (AJAX로 처리)
+   - 에러/성공 메시지 컨테이너 추가 (#auth-message)
+   - 비밀번호 찾기 탭 추가
+   - 비밀번호 재설정 폼 추가 (2단계: 본인확인 → 비밀번호 변경)
+   - 로그인으로 돌아가기 버튼 추가
+
+2. auth.js 전면 재작성
+   - AJAX 기반 폼 제출 (fetch API)
+   - 에러 메시지 표시 함수 (showMessage)
+   - 자동 로그인: localStorage에 이메일/토큰 저장
+   - 비밀번호 재설정 2단계 프로세스
+   - 버튼 로딩 상태 관리
+
+3. auth.py 라우트 추가
+   - /verify-user: 이메일+이름으로 본인 확인
+   - /reset-password: 비밀번호 재설정
+
+4. Firebase auth_service.py 함수 추가
+   - verify_user_by_email_and_name(): 이메일+이름 검증
+   - reset_user_password(): 비밀번호 재설정 (Firebase Auth + Firestore)
+
+5. Firebase __init__.py 업데이트
+   - 새 함수들 export 추가
+
+6. auth.css 스타일 추가
+   - .auth-message (error/success/info)
+   - .reset-description
+   - .auth-btn-secondary
+   - .auth-btn.loading
+
+-------------------------------------------
+[요청 #25] 2025-12-05 (금) 18:25
+-------------------------------------------
+📋 요청 내용:
+- 로그인/회원가입/비밀번호찾기 탭 버튼 제거
+- 하단에 "서비스가 처음이신가요?" → 회원가입 링크
+- 비밀번호 찾기 링크로 전환
+
+🔧 처리 내용:
+1. auth.html 수정
+   - 탭 버튼 (.auth-tabs) 제거
+   - 로그인 폼 하단: "서비스가 처음이신가요? 회원가입" 링크
+   - 회원가입 폼 상단: 제목 추가, 하단: "이미 계정이 있으신가요? 로그인"
+   - 비밀번호 찾기 폼 상단: 제목 추가, 하단: "로그인으로 돌아가기"
+
+2. auth.js 수정
+   - 탭 전환 로직 제거
+   - 링크 클릭 이벤트로 폼 전환 (goto-signup, goto-reset 등)
+
+3. auth.css 수정
+   - .auth-tabs 스타일 제거
+   - .form-title 스타일 추가
+   - .auth-switch 스타일 추가 (하단 전환 링크)
+
+-------------------------------------------
+[요청 #26] 2025-12-05 (금) 18:30
+-------------------------------------------
+📋 요청 내용:
+- 회전(rotate) 애니메이션 최소화
+- 버튼 전체가 돌아가는 현상 제거
+
+🔧 처리 내용:
+1. style.css 수정
+   - @keyframes spin 제거
+   - .loading 스피너 클래스 제거
+   - .spinning 클래스 제거
+
+2. main.js 수정
+   - fa-spin 클래스 → fa-hourglass-half로 변경 (회전 없음)
+
+3. report.js 수정
+   - fa-spin 클래스 → fa-hourglass-half로 변경
+
+4. auth.css 수정
+   - .loading span 불필요 스타일 제거
+
+* 유지된 회전:
+   - SVG score-circle의 rotate(-90deg): 시작점 조정용 정적 변환
+   - accordion-icon의 rotate(180deg): 펼침/접기 토글용 정적 변환
+
+-------------------------------------------
+[요청 #27] 2025-12-05 (금) 18:35
+-------------------------------------------
+📋 요청 내용:
+- DB 조회 안됨, 비밀번호 찾기 안됨 - 디버깅 요청
+
+🔧 처리 내용:
+1. 문제 발견: 라우트 경로 불일치
+   - JS에서 /login, /signup, /verify-user로 요청
+   - 실제 라우트는 /auth/login, /auth/signup 등
+
+2. app/__init__.py 수정
+   - auth_bp에서 url_prefix='/auth' 제거
+   - 이제 /login, /signup 등으로 직접 접근 가능
+
+3. app/routes/main.py 수정
+   - 중복되는 /login, /signup redirect 라우트 제거
+
+4. 디버그 로깅 추가
+   - auth.py: 로그인 시도 로깅
+   - auth_service.py: verify_user_password, verify_user_by_email_and_name에 상세 로깅
+
+-------------------------------------------
+[요청 #28] 2025-12-05 (금) 18:45
+-------------------------------------------
+📋 요청 내용:
+- 요약 보고서 생성 시 "기업명과 종목코드가 필요합니다" 오류 디버깅
+
+🔧 처리 내용:
+1. report.js 수정
+   - DOMContentLoaded에서 COMPANY_DATA 유효성 검사 추가
+   - name 또는 ticker가 없으면 메인 페이지로 리다이렉트
+   - 디버그 로그 추가
+
+2. report.py 수정
+   - /report 라우트에 디버그 로깅 추가
+   - company_name 또는 ticker가 없으면 메인으로 리다이렉트
+
+-------------------------------------------
+[요청 #29] 2025-12-05 (금) 18:50
+-------------------------------------------
+📋 요청 내용:
+- 보고서 페이지 이동 안됨 (ticker가 빈 값)
+
+🔧 처리 내용:
+1. 문제 원인 발견
+   - CSV 컬럼명 불일치
+   - 코드에서: '종목코드'
+   - 실제 CSV: '단축코드'
+
+2. company.py 수정
+   - row.get('종목코드') → row.get('단축코드', row.get('종목코드', ''))
+   - row.get('한글 정식명칭') → row.get('한글 종목명', ...)
+   - 코드가 있는 경우만 companies 리스트에 추가
+
+-------------------------------------------
+[요청 #30] 2025-12-05 (금) 18:55
+-------------------------------------------
+📋 요청 내용:
+- Report loading error: cannot import name 'fetch_dividend'
+
+🔧 처리 내용:
+1. 문제 원인: 함수명 불일치
+   - import 하려던 함수: fetch_dividend, fetch_disclosure_list
+   - 실제 함수명: get_dividend_info, get_regular_reports
+
+2. report_service.py import 수정
+   - get_dividend_info as fetch_dividend
+   - get_regular_reports as fetch_disclosure_list
+
+-------------------------------------------
+[요청 #31] 2025-12-05 (금) 19:00
+-------------------------------------------
+📋 요청 내용:
+1) "Object of type bool is not JSON serializable" 오류 수정
+2) 로딩 화면에 파란색 아이콘 애니메이션 추가
+
+🔧 처리 내용:
+1. report.py에 JSON 직렬화 헬퍼 함수 추가
+   - convert_to_serializable(): numpy/pandas 타입 변환
+   - np.integer, np.floating, np.bool_ 등 처리
+   - collect_data_only API에 적용
+
+2. report.html 로딩 화면 업데이트
+   - 5개 파란색 아이콘 추가 (차트, 빌딩, 뉴스, 코인, 로봇)
+   - 각 아이콘에 --delay CSS 변수로 시차 적용
+
+3. report.css 로딩 애니메이션 추가
+   - .loading-icons: 아이콘 컨테이너
+   - .loading-icon-item: 그라데이션 배경 + 그림자
+   - @keyframes iconPop: scale 0.7 → 1 → 0.7 (뿅뿅 효과)
+   - animation-delay로 순차적 애니메이션
+
+-------------------------------------------
+[요청 #32] 2025-12-05 (금) 19:10
+-------------------------------------------
+📋 요청 내용:
+1) 적정주가 산출 근거 툴팁 추가
+2) AI 분석 요약 상단 이동
+3) 재무비율 (유동성/안정성/수익성/활동성) 전체 표시 + 위험도 표시
+4) 재무상태표, 현금흐름표 탭으로 추가, 주요 항목 하이라이트
+5) 뉴스 표시 5개, LLM 분석용 15개
+
+🔧 처리 내용:
+1. report.html 수정
+   - 적정주가 카드에 ? 툴팁 추가
+   - AI 종합 평가 섹션을 상단(섹션2)으로 이동
+   - 재무비율 분석 섹션 추가 (4개 카테고리, 각 지표별 툴팁)
+   - 재무제표 탭 섹션 추가 (재무상태표/손익계산서/현금흐름표)
+
+2. report.css 추가
+   - 툴팁 스타일 (.tooltip-trigger, .tooltip-content)
+   - AI 요약 상단 스타일 (.section-ai-summary-top)
+   - 재무비율 카드 스타일 (.ratio-category, .ratio-card)
+   - 상태 표시 스타일 (.safe/.warning/.danger)
+   - 재무제표 탭 스타일 (.statement-tabs, .statement-content)
+   - 하이라이트 행 스타일 (.highlight)
+
+3. report.js 추가
+   - initStatementTabs(): 탭 전환 초기화
+   - displayFinancialRatios(): 재무비율 표시 + 위험도 판단
+   - setRatioValue(): 개별 비율 값 설정 + 색상 적용
+   - displayFinancialStatements(): 재무제표 표시
+   - displayBalanceSheet/IncomeStatement/CashFlow(): 각 재무제표 렌더링
+   - formatBillion(): 억 단위 변환
+
+4. report_service.py 수정
+   - 뉴스 수집 10개 → 15개
+   - items (표시용 5개) / items_for_analysis (LLM용 15개) 분리
+
+-------------------------------------------
+[요청 #33] 2025-12-05 (금) 19:20
+-------------------------------------------
+📋 요청 내용:
+1) "Cannot read properties of null (reading 'style')" 오류 수정
+2) AI 종합 평가 영역 가로 너비 수정
+3) 뉴스 분석 영역 가로 너비 수정
+4) 기본적 분석(밸류에이션, 재무비율, 재무제표)을 주가 차트보다 위로 배치
+5) 챗봇 메시지 표시 및 보내기 버튼 수정
+6) 모바일에서 채팅 아이콘 클릭 시 채팅창 표시
+
+🔧 처리 내용:
+1. report.js 수정
+   - 기술적 지표 요소들 null 체크 추가 (rsiBar, mfiBar 등)
+   - toggleMobileChat() 함수 추가
+   - displayNewsList() 뉴스 표시 개선
+
+2. report.html 수정
+   - 섹션 순서 변경: 기본적 분석 → 주가 차트 (차트를 아래로)
+   - 모바일 채팅 토글 버튼 추가 (.mobile-chat-toggle)
+   - 채팅 보내기 버튼 클래스 수정 (.chat-send-btn)
+
+3. report.css 수정
+   - .section-ai-summary-top width: 100% 추가
+   - .section-news 뉴스 섹션 전체 너비 스타일
+   - .news-item 뉴스 아이템 새 레이아웃
+   - .chat-send-btn 보내기 버튼 스타일
+   - .mobile-chat-toggle 모바일 토글 버튼 스타일
+   - 반응형: max-width: 1200px에서 모바일 채팅 활성화
+
+-------------------------------------------
+[요청 #34] 2025-12-05 (금) 19:35
+-------------------------------------------
+📋 요청 내용:
+"Cannot read properties of null (reading 'style')" 오류 심층 디버깅
+
+🔧 처리 내용:
+1. report.js 전체 null 체크 추가
+   - displayBasicData(): setTextSafe, setClassSafe 헬퍼 함수 생성
+   - displayAIAnalysis(): 모든 getElementById에 null 체크 추가
+   - scoreCircle, opinionBadge, breakdown 요소들
+   - newsScore, newsSentiment, evaluationSummary
+   - forecast3m, forecast6m, forecast12m
+   - generatedTime, fairPrice
+   - tableBody (querySelector 결과)
+   - downloadPDF(): chatSidebar, reportMain, loadingOverlay null 체크
+
+-------------------------------------------
+[요청 #35] 2025-12-05 (금) 19:55
+-------------------------------------------
+📋 요청 내용:
+1) 그래프가 너무 좁음 - 기간에 맞게 확장
+2) AI 종합 평가 - 진한 파란색 그라데이션 배경, 신비로운 느낌
+3) 재무비율 분석 - 데이터 표시 안됨 수정
+4) 툴팁 흔들림 - 고정 위치로 수정
+5) 재무제표 섹션 삭제
+6) 뉴스 분석 - 공백 제거, 바로가기 버튼 추가
+7) AI 상세 평가 - 모두 열린 상태 기본값
+8) 좌측 네비게이션 목차 추가
+
+🔧 처리 내용:
+1. report.html 수정
+   - 좌측 네비게이션 (.report-nav) 추가
+   - 모든 섹션에 id 속성 추가 (section-summary, section-ai-summary 등)
+   - 재무제표 섹션 삭제
+   - 뉴스 섹션 구조 변경
+
+2. report.css 수정
+   - 좌측 네비게이션 스타일 추가
+   - .report-main padding-left: 232px 추가
+   - .chart-container height: 400px → 500px
+   - .section-ai-summary-top 진한 파란색 그라데이션 배경 + 애니메이션
+   - 툴팁 position 고정, transition 단순화
+   - 뉴스 아이템 스타일 수정 + news-link-btn 추가
+   - 반응형: 1400px 이하에서 네비게이션 숨김
+
+3. report.js 수정
+   - initNavigation() 함수 추가 (스크롤 연동)
+   - displayFinancialRatios() 수정 - DART API 데이터 구조에 맞게 파싱
+   - displayNewsList() 수정 - 바로가기 버튼 추가
+   - displayDetailEvaluations() 수정 - 모든 항목 기본 open
+
+-------------------------------------------
+[요청 #36] 2025-12-05 (금) 20:15
+-------------------------------------------
+📋 요청 내용:
+1) 주가 추이 - 예측 제거, "1년 예측보기" 버튼으로 별도 표시
+2) 뉴스 분석 - 공백 오류 수정, 우측 아이콘 흰색 → 파란색 그라데이션
+3) AI 종합평가 - 하늘색 영역 없이 전체 다크블루에 흰 글씨
+4) 숫자 폰트 크기 조정 (원 단위 줄바꿈 방지)
+5) PDF 저장 버튼 최하단에 파란색 그라데이션으로 추가
+
+🔧 처리 내용:
+1. report.html 수정
+   - 차트 헤더에 토글 버튼 추가 (1년 실적 / 1년 예측보기)
+   - 차트 범례에서 예측 항목 제거
+   - 하단에 PDF 다운로드 섹션 추가
+
+2. report.css 수정
+   - .chart-header, .chart-toggle, .chart-btn 스타일 추가
+   - .btn-pdf-download 파란색 그라데이션 버튼 스타일
+   - .news-item .news-link-btn 파란색 그라데이션으로 변경
+   - .card-value font-size: 2rem → 1.625rem + white-space: nowrap
+   - .val-value font-size: 1.5rem → 1.25rem
+   - .section-ai-summary-top 하늘색 배경 제거
+
+3. report.js 수정
+   - showChart(mode) 함수 추가 - 차트 모드 전환
+   - createYearlyChart() - 1년 실적 차트 (예측 없음)
+   - createForecastChart() - 최근 6개월 + 1년 예측 (월별 보간)
+   - getChartOptions() 분리
+
+===========================================

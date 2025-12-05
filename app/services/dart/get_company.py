@@ -40,10 +40,10 @@ def get_company_info(corp_code):
 
 
 if __name__ == "__main__":
-    # 삼성전자 고유번호
-    corp_code = "00126380"
+    # 신한금융지주 고유번호
+    corp_code = "00382199"
     
-    print("삼성전자 기업 개황 조회")
+    print("신한금융지주 기업 개황 조회")
     print("-" * 50)
     
     info = get_company_info(corp_code)

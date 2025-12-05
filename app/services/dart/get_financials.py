@@ -49,12 +49,12 @@ def fetch_financials_auto(corp_code, year, report_code):
     return None, None
 
 if __name__ == "__main__":
-    # 삼성전자 고유번호
-    corp_code = "00126380"
-    year = "2018"
-    report_code = "11011"  # 3분기
+    # 신한금융지주 고유번호
+    corp_code = "00382199"
+    year = "2023"
+    report_code = "11011"  # 사업보고서
 
-    print("삼성전자 2025년 3분기 재무제표 조회 시작")
+    print("신한금융지주 2023년 사업보고서 재무제표 조회 시작")
 
     rows, used_type = fetch_financials_auto(corp_code, year, report_code)
 

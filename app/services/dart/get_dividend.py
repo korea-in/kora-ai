@@ -83,11 +83,11 @@ def get_dividend_history(corp_code, years=None):
 
 
 if __name__ == "__main__":
-    # 삼성전자 고유번호
-    corp_code = "00126380"
+    # 신한금융지주 고유번호
+    corp_code = "00382199"
     year = "2023"
     
-    print(f"삼성전자 {year}년 배당 정보 조회")
+    print(f"신한금융지주 {year}년 배당 정보 조회")
     print("-" * 50)
     
     dividends = get_latest_dividend_info(corp_code, year)

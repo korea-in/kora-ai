@@ -1,0 +1,110 @@
+/* ============================================
+   KORA AI - Common/Base Styles
+   ============================================ */
+
+/* CSS Variables */
+:root {
+    /* Primary Colors - Shinhan Blue */
+    --primary-blue: #0046FF;
+    --primary-blue-light: #3D7BFF;
+    --primary-blue-dark: #0033CC;
+    
+    /* Gradient Colors */
+    --gradient-primary: linear-gradient(135deg, #0046FF 0%, #00B4D8 100%);
+    --gradient-secondary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-accent: linear-gradient(135deg, #0046FF 0%, #00D4FF 50%, #00F5A0 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+    --gradient-button: linear-gradient(135deg, #0046FF 0%, #0066FF 50%, #00B4D8 100%);
+    --gradient-hover: linear-gradient(135deg, #0033CC 0%, #0055CC 50%, #009AC4 100%);
+    
+    /* Background Colors */
+    --bg-primary: #F5F8FF;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #EEF2FF;
+    --bg-card: #FFFFFF;
+    
+    /* Text Colors */
+    --text-primary: #1A1D29;
+    --text-secondary: #4A5568;
+    --text-tertiary: #718096;
+    --text-white: #FFFFFF;
+    
+    /* Accent Colors */
+    --accent-success: #00D68F;
+    --accent-warning: #FFB800;
+    --accent-danger: #FF4757;
+    --accent-info: #00B4D8;
+    
+    /* Border & Shadow */
+    --border-light: #E2E8F0;
+    --border-medium: #CBD5E0;
+    --shadow-sm: 0 1px 3px rgba(0, 70, 255, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 70, 255, 0.08);
+    --shadow-lg: 0 10px 40px rgba(0, 70, 255, 0.12);
+    --shadow-xl: 0 20px 60px rgba(0, 70, 255, 0.15);
+    
+    /* Spacing */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+}
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+}
+
+input {
+    font-family: inherit;
+    border: none;
+    outline: none;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-blue-light);
+}
+
+/* Common Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

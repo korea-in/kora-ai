@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}KORA AI - 로그인{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <!-- 좌측: 일러스트레이션 영역 -->
+    <div class="auth-illustration">
+        <!-- 배경 도형들 -->
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        
+        <!-- 콘텐츠 -->
+        <div class="illustration-content">
+            <div class="illustration-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1 class="illustration-title">AI 기반 기업 분석의<br>새로운 기준</h1>
+            <p class="illustration-subtitle">
+                실시간 공시, 뉴스, 재무 데이터를 AI가 분석하여<br>
+                전문적인 기업 리포트를 자동으로 생성합니다
+            </p>
+            
+            <!-- 기능 리스트 -->
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span class="feature-text">실시간 DART 공시 분석</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <span class="feature-text">최신 뉴스 감정 분석</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <span class="feature-text">AI 기업 분석 리포트 자동 생성</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 우측: 로그인 폼 영역 -->
+    <div class="auth-form-section">
+        <div class="auth-form-container">
+            <!-- 브랜드 약어 설명 -->
+            <div class="brand-acronym">
+                <span class="highlight">KO</span><span class="dim">SPI · </span><span class="highlight">KO</span><span class="dim">SDAQ · </span><span class="highlight">R</span><span class="dim">esearch · </span><span class="highlight">A</span><span class="dim">nalyze</span>
+            </div>
+            
+            <!-- 로고 및 환영 메시지 -->
+            <div class="auth-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h2 class="auth-welcome">KORA AI</h2>
+                <p class="auth-welcome-sub">AI 기업 분석 플랫폼에 오신 것을 환영합니다</p>
+            </div>
+
+            <!-- 에러/성공 메시지 -->
+            <div id="auth-message" class="auth-message" style="display: none;"></div>
+
+            <!-- 로그인 폼 -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">이메일</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="login-email" name="email" placeholder="이메일을 입력하세요" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">비밀번호</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" name="password" placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                </div>
+                <div class="form-options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="remember">
+                        <span class="checkmark"></span>
+                        <span>로그인 상태 유지</span>
+                    </label>
+                    <a href="#" class="forgot-link" id="goto-reset">비밀번호 찾기</a>
+                </div>
+                <button type="submit" class="auth-btn">
+                    <span>로그인</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="auth-switch">
+                    <span>서비스가 처음이신가요?</span>
+                    <a href="#" id="goto-signup">회원가입</a>
+                </div>
+            </form>
+
+            <!-- 회원가입 폼 -->
+            <form id="signup-form" class="auth-form">
+                <h3 class="form-title">회원가입</h3>
+                <div class="form-group">
+                    <label for="signup-name">이름</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="signup-name" name="name" placeholder="이름을 입력하세요" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">이메일</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="signup-email" name="email" placeholder="이메일을 입력하세요" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">비밀번호</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signup-password" name="password" placeholder="비밀번호를 입력하세요 (6자 이상)" required minlength="6">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password-confirm">비밀번호 확인</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signup-password-confirm" name="password_confirm" placeholder="비밀번호를 다시 입력하세요" required>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn">
+                    <span>회원가입</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="auth-switch">
+                    <span>이미 계정이 있으신가요?</span>
+                    <a href="#" id="goto-login-from-signup">로그인</a>
+                </div>
+            </form>
+
+            <!-- 비밀번호 재설정 폼 -->
+            <form id="reset-form" class="auth-form">
+                <h3 class="form-title">비밀번호 찾기</h3>
+                <p class="reset-description">가입 시 등록한 이메일과 이름을 입력하면 새 비밀번호를 설정할 수 있습니다.</p>
+                <div class="form-group">
+                    <label for="reset-email">이메일</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="reset-email" name="email" placeholder="가입한 이메일을 입력하세요" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reset-name">이름</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="reset-name" name="name" placeholder="가입 시 등록한 이름을 입력하세요" required>
+                    </div>
+                </div>
+                
+                <!-- 새 비밀번호 입력 (인증 후 표시) -->
+                <div id="new-password-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="reset-new-password">새 비밀번호</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-new-password" name="new_password" placeholder="새 비밀번호 (6자 이상)" minlength="6">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-new-password-confirm">새 비밀번호 확인</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-new-password-confirm" name="new_password_confirm" placeholder="새 비밀번호 확인">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="reset-btn">
+                    <span id="reset-btn-text">본인 확인</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="auth-switch">
+                    <a href="#" id="goto-login-from-reset"><i class="fas fa-arrow-left"></i> 로그인으로 돌아가기</a>
+                </div>
+            </form>
+
+            <!-- 소셜 로그인 -->
+            <div class="social-login">
+                <div class="divider">
+                    <span>또는 소셜 계정으로 시작</span>
+                </div>
+                <div class="social-buttons">
+                    <button class="social-btn kakao" type="button">
+                        <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png" alt="Kakao">
+                    </button>
+                    <button class="social-btn naver" type="button">
+                        <span class="naver-icon">N</span>
+                    </button>
+                    <button class="social-btn google" type="button">
+                        <i class="fab fa-google"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 하단 정보 -->
+            <div class="auth-footer">
+                <p>© 2025 KORA AI. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

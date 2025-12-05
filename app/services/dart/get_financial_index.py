@@ -93,11 +93,11 @@ def fetch_latest_financial_index(corp_code, year="2024"):
 
 
 if __name__ == "__main__":
-    # 삼성전자 고유번호
-    corp_code = "00126380"
+    # 신한금융지주 고유번호
+    corp_code = "00382199"
     year = "2023"
     
-    print(f"삼성전자 {year}년 주요계정 지표 조회")
+    print(f"신한금융지주 {year}년 주요계정 지표 조회")
     print("=" * 60)
     
     # 전체 지표 조회
