@@ -18,6 +18,28 @@ _firebase_initialized = False
 _db = None
 
 
+def _get_firebase_credentials_from_env():
+    """환경변수에서 Firebase 인증 정보 딕셔너리 생성"""
+    private_key = os.environ.get('FIREBASE_PRIVATE_KEY', '')
+    # .env에서 읽은 \n 문자열을 실제 줄바꿈으로 변환
+    if private_key:
+        private_key = private_key.replace('\\n', '\n')
+    
+    return {
+        "type": os.environ.get('FIREBASE_TYPE', 'service_account'),
+        "project_id": os.environ.get('FIREBASE_PROJECT_ID', ''),
+        "private_key_id": os.environ.get('FIREBASE_PRIVATE_KEY_ID', ''),
+        "private_key": private_key,
+        "client_email": os.environ.get('FIREBASE_CLIENT_EMAIL', ''),
+        "client_id": os.environ.get('FIREBASE_CLIENT_ID', ''),
+        "auth_uri": os.environ.get('FIREBASE_AUTH_URI', 'https://accounts.google.com/o/oauth2/auth'),
+        "token_uri": os.environ.get('FIREBASE_TOKEN_URI', 'https://oauth2.googleapis.com/token'),
+        "auth_provider_x509_cert_url": os.environ.get('FIREBASE_AUTH_PROVIDER_CERT_URL', 'https://www.googleapis.com/oauth2/v1/certs'),
+        "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_CERT_URL', ''),
+        "universe_domain": os.environ.get('FIREBASE_UNIVERSE_DOMAIN', 'googleapis.com')
+    }
+
+
 def init_firebase(app):
     """Flask 앱과 함께 Firebase 초기화"""
     global _firebase_initialized, _db
@@ -25,14 +47,16 @@ def init_firebase(app):
     if _firebase_initialized:
         return
     
-    cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH', './serviceAccountKey.json')
-    
-    if not os.path.exists(cred_path):
-        app.logger.warning(f"Firebase credentials not found at {cred_path}")
-        return
-    
     try:
-        cred = credentials.Certificate(cred_path)
+        # 환경변수에서 인증 정보 가져오기
+        cred_dict = _get_firebase_credentials_from_env()
+        
+        # 필수 값 확인
+        if not cred_dict.get('project_id') or not cred_dict.get('private_key'):
+            app.logger.warning("Firebase credentials not found in environment variables")
+            return
+        
+        cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
         _db = firestore.client()
         _firebase_initialized = True
