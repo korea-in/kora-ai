@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report.company_name }} 분석 보고서 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <!-- 헤더 -->
+    <header class="report-header">
+        <div class="header-left">
+            <a href="/reports" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="company-info-header">
+                <span class="market-badge {{ report.market|lower if report.market else 'kospi' }}">{{ report.market or 'KOSPI' }}</span>
+                <h1 class="company-name">{{ report.company_name }}</h1>
+                <span class="ticker-code">{{ report.ticker }}</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="generated-time">{{ report.created_at_str if report.created_at_str else '' }}</span>
+            <a href="/report?company={{ report.company_name }}&ticker={{ report.ticker }}&market={{ report.market }}" class="btn-refresh">
+                <i class="fas fa-sync-alt"></i> 새로 분석
+            </a>
+        </div>
+    </header>
+
+    <!-- 좌측 네비게이션 -->
+    <nav class="report-nav" id="reportNav">
+        <button class="nav-toggle-btn" onclick="toggleNav()" title="목차 숨기기">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="nav-content">
+        <div class="nav-title">목차</div>
+        <ul class="nav-list">
+            <li><a href="#section-summary" class="nav-link active"><i class="fas fa-star"></i> 핵심 요약</a></li>
+            <li><a href="#section-ai-summary" class="nav-link"><i class="fas fa-robot"></i> AI 종합 평가</a></li>
+            <li><a href="#section-info" class="nav-link"><i class="fas fa-building"></i> 기업 정보</a></li>
+            <li><a href="#section-valuation" class="nav-link"><i class="fas fa-calculator"></i> 밸류에이션</a></li>
+            <li><a href="#section-ratios" class="nav-link"><i class="fas fa-balance-scale"></i> 재무비율</a></li>
+            <li><a href="#section-news" class="nav-link"><i class="fas fa-newspaper"></i> 뉴스</a></li>
+            <li><a href="#section-disclosure" class="nav-link"><i class="fas fa-file-alt"></i> 공시 정보</a></li>
+        </ul>
+        </div>
+        <div class="nav-collapsed-icons">
+            <button class="nav-expand-btn" onclick="toggleNav()" title="목차 열기">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="report-main">
+        <!-- 섹션 1: 핵심 요약 카드 -->
+        <section class="section section-summary" id="section-summary">
+            <div class="summary-cards">
+                <!-- 분석 시점 주가 카드 -->
+                <div class="summary-card current-price-card">
+                    <div class="card-label">분석 시점 주가</div>
+                    {% set krx = report.krx_data or {} %}
+                    {% set current_price = krx.current_price or {} %}
+                    <div class="card-value">{{ "{:,.0f}".format(current_price.close) if current_price.close else '-' }}원</div>
+                    {% if current_price.change_rate %}
+                        {% set rate = current_price.change_rate %}
+                        <div class="card-change {{ 'positive' if rate >= 0 else 'negative' }}">
+                            {{ "{:+.2f}".format(rate) }}%
+                        </div>
+                    {% else %}
+                        <div class="card-change">-</div>
+                    {% endif %}
+                </div>
+                
+                <!-- 적정주가 카드 -->
+                <div class="summary-card fair-price-card">
+                    <div class="card-label">AI 적정주가</div>
+                    <div class="card-value">{{ "{:,.0f}".format(report.fair_price) if report.fair_price else '-' }}원</div>
+                    {% if report.fair_price and current_price.close %}
+                        {% set current = current_price.close %}
+                        {% set fair = report.fair_price %}
+                        {% set diff = ((fair - current) / current * 100) %}
+                        {% if fair > current * 1.1 %}
+                            <div class="card-badge undervalued">저평가 (+{{ "{:.1f}".format(diff) }}%)</div>
+                        {% elif fair < current * 0.9 %}
+                            <div class="card-badge overvalued">고평가 ({{ "{:.1f}".format(diff) }}%)</div>
+                        {% else %}
+                            <div class="card-badge fair">적정 수준</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="card-badge">-</div>
+                    {% endif %}
+                </div>
+                
+                <!-- 투자 점수 카드 -->
+                <div class="summary-card score-card">
+                    <div class="card-label">투자 점수 {{ '(' + report.investment_grade + ')' if report.investment_grade else '' }}</div>
+                    <div class="score-circle">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="score-bg" cx="50" cy="50" r="45"/>
+                            <circle class="score-fill" cx="50" cy="50" r="45" 
+                                style="stroke-dashoffset: calc(283 - ({{ report.investment_score or 0 }} / 100) * 283);"/>
+                        </svg>
+                        <span class="score-value">{{ report.investment_score or 0 }}</span>
+                    </div>
+                </div>
+                
+                <!-- 투자 의견 카드 -->
+                <div class="summary-card opinion-card">
+                    <div class="card-label">투자 의견</div>
+                    {% set opinion = report.investment_opinion or '' %}
+                    {% if '매수' in opinion %}
+                        <div class="opinion-badge buy">{{ opinion }}</div>
+                    {% elif '매도' in opinion %}
+                        <div class="opinion-badge sell">{{ opinion }}</div>
+                    {% else %}
+                        <div class="opinion-badge hold">{{ opinion or '-' }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 2: AI 평가 요약 -->
+        <section class="section section-ai-summary-top" id="section-ai-summary">
+            <h2 class="section-title"><i class="fas fa-robot"></i> AI 종합 평가</h2>
+            <div class="ai-summary-content">
+                <p class="evaluation-summary">
+                    {{ report.evaluation_summary if report.evaluation_summary else '저장된 AI 평가 내용이 없습니다.' }}
+                </p>
+            </div>
+            
+            {% set ai = report.ai_analysis or {} %}
+            {% if ai.detail_evaluation %}
+            <div class="detail-accordion" style="margin-top: 20px;">
+                {% for category, items in ai.detail_evaluation.items() %}
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span>{{ category }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        {% if items is mapping %}
+                            {% for key, value in items.items() %}
+                            <div class="eval-item">
+                                <strong>{{ key }}:</strong> {{ value }}
+                            </div>
+                            {% endfor %}
+                        {% elif items is iterable and items is not string %}
+                            {% for item in items %}
+                            <div class="eval-item">{{ item }}</div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="eval-item">{{ items }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- 섹션 3: 기업 정보 -->
+        {% set dart = report.dart_data or {} %}
+        {% set company_info = dart.company_info or report.company_info or {} %}
+        {% if company_info %}
+        <section class="section section-info" id="section-info">
+            <h2 class="section-title"><i class="fas fa-building"></i> 기업 정보</h2>
+            <div class="info-table-wrapper">
+                <table class="info-table" id="companyInfoTable">
+                    <tbody>
+                        <tr><td class="label">회사명</td><td>{{ company_info.corp_name or report.company_name }}</td></tr>
+                        {% if company_info.ceo_nm %}<tr><td class="label">대표자</td><td>{{ company_info.ceo_nm }}</td></tr>{% endif %}
+                        {% if company_info.induty_code %}<tr><td class="label">업종</td><td>{{ company_info.induty_code }}</td></tr>{% endif %}
+                        {% if company_info.est_dt %}<tr><td class="label">설립일</td><td>{{ company_info.est_dt }}</td></tr>{% endif %}
+                        {% if company_info.stock_lst_dt %}<tr><td class="label">상장일</td><td>{{ company_info.stock_lst_dt }}</td></tr>{% endif %}
+                        {% if company_info.acc_mt %}<tr><td class="label">결산월</td><td>{{ company_info.acc_mt }}월</td></tr>{% endif %}
+                        {% if company_info.hm_url %}<tr><td class="label">홈페이지</td><td><a href="{{ company_info.hm_url }}" target="_blank">{{ company_info.hm_url }}</a></td></tr>{% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 섹션 4: 밸류에이션 -->
+        {% set valuation = krx.valuation or {} %}
+        <section class="section section-valuation" id="section-valuation">
+            <h2 class="section-title"><i class="fas fa-calculator"></i> 밸류에이션</h2>
+            <div class="valuation-grid">
+                <div class="val-card">
+                    <div class="val-label">PER</div>
+                    <div class="val-value">{{ valuation.per if valuation.per else '-' }}{{ '배' if valuation.per else '' }}</div>
+                    <div class="val-desc">주가수익비율</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">PBR</div>
+                    <div class="val-value">{{ valuation.pbr if valuation.pbr else '-' }}{{ '배' if valuation.pbr else '' }}</div>
+                    <div class="val-desc">주가순자산비율</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">EPS</div>
+                    <div class="val-value">{{ "{:,.0f}".format(valuation.eps) if valuation.eps else '-' }}{{ '원' if valuation.eps else '' }}</div>
+                    <div class="val-desc">주당순이익</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">BPS</div>
+                    <div class="val-value">{{ "{:,.0f}".format(valuation.bps) if valuation.bps else '-' }}{{ '원' if valuation.bps else '' }}</div>
+                    <div class="val-desc">주당순자산</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">배당수익률</div>
+                    <div class="val-value">{{ valuation.div_yield if valuation.div_yield else '-' }}{{ '%' if valuation.div_yield else '' }}</div>
+                    <div class="val-desc">연간 배당률</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 5: 재무비율 분석 -->
+        {% set financial_index = dart.financial_index or {} %}
+        <section class="section section-financial-ratios" id="section-ratios">
+            <h2 class="section-title"><i class="fas fa-balance-scale"></i> 재무비율 분석</h2>
+            <div class="ratios-container" id="ratiosContainer">
+                {% for category_name in ['수익성지표', '안정성지표', '성장성지표', '활동성지표'] %}
+                    {% set items = financial_index.get(category_name, []) %}
+                    {% set valid_items = items | selectattr('idx_val') | list %}
+                    {% if valid_items %}
+                    <div class="ratio-category">
+                        <h3 class="ratio-category-title">
+                            {% if category_name == '수익성지표' %}<i class="fas fa-chart-line"></i> 수익성 지표
+                            {% elif category_name == '안정성지표' %}<i class="fas fa-shield-alt"></i> 안정성 지표
+                            {% elif category_name == '성장성지표' %}<i class="fas fa-seedling"></i> 성장성 지표
+                            {% elif category_name == '활동성지표' %}<i class="fas fa-sync-alt"></i> 활동성 지표
+                            {% endif %}
+                        </h3>
+                        <div class="ratio-grid">
+                            {% for item in valid_items %}
+                            <div class="ratio-card">
+                                <div class="ratio-header">
+                                    <span class="ratio-name">{{ item.idx_nm }}</span>
+                                </div>
+                                <div class="ratio-value">{{ item.idx_val }}{% if '%' not in item.idx_nm and '배' not in item.idx_nm and '율' in item.idx_nm %}%{% endif %}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- 섹션 6: 뉴스 -->
+        {% set news_data = report.news_data or {} %}
+        {% set news_items = news_data.get('items', []) if news_data else [] %}
+        {% if news_items %}
+        <section class="section section-news" id="section-news">
+            <h2 class="section-title"><i class="fas fa-newspaper"></i> 관련 뉴스</h2>
+            <div class="news-list" id="newsList">
+                {% for item in news_items %}
+                <a href="{{ item.link }}" target="_blank" class="news-item">
+                    <div class="news-content">
+                        <div class="news-title">{{ item.title }}</div>
+                        <div class="news-desc">{{ item.description }}</div>
+                    </div>
+                    <div class="news-meta">
+                        <span class="news-source">{{ item.source or '-' }}</span>
+                        <span class="news-date">{{ item.pub_date or '' }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 섹션 7: 공시 정보 -->
+        {% set disclosures = dart.disclosures or [] %}
+        {% if disclosures %}
+        <section class="section section-disclosure" id="section-disclosure">
+            <h2 class="section-title"><i class="fas fa-file-alt"></i> 최근 공시</h2>
+            <div class="disclosure-list" id="disclosureList">
+                {% for disc in disclosures %}
+                <a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo={{ disc.rcept_no }}" target="_blank" class="disclosure-item">
+                    <div class="disclosure-type {{ 'important' if '사업보고서' in disc.report_nm or '분기보고서' in disc.report_nm else '' }}">
+                        {{ disc.report_nm[:20] }}{% if disc.report_nm|length > 20 %}...{% endif %}
+                    </div>
+                    <div class="disclosure-date">{{ disc.rcept_dt }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- 액션 버튼 -->
+        <section class="section section-download">
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a href="/reports" class="btn-pdf-download" style="background: linear-gradient(135deg, #6b7280, #4b5563);">
+                    <i class="fas fa-list"></i>
+                    <span>보고서 목록으로</span>
+                </a>
+                <a href="/report?company={{ report.company_name }}&ticker={{ report.ticker }}&market={{ report.market }}" class="btn-pdf-download">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>최신 분석 보기</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI 채팅창 -->
+    <aside class="chat-sidebar" id="chatSidebar">
+        <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()" title="상담 숨기기">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="chat-collapsed-icon">
+            <button class="chat-reopen-btn" onclick="toggleChat()" title="상담 열기">
+                <i class="fas fa-comments"></i>
+            </button>
+        </div>
+        <div class="chat-content">
+            <div class="chat-header">
+                <h3><i class="fas fa-comments"></i> AI 상담</h3>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot">
+                    <div class="message-content">
+                        안녕하세요! {{ report.company_name }} 저장된 보고서에 대해 궁금한 점이 있으시면 질문해주세요.
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="질문을 입력하세요..." onkeypress="handleChatKeypress(event)">
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+const COMPANY_DATA = {
+    name: "{{ report.company_name }}",
+    ticker: "{{ report.ticker }}",
+    market: "{{ report.market }}"
+};
+
+// 네비게이션 토글
+function toggleNav() {
+    const nav = document.getElementById('reportNav');
+    nav.classList.toggle('collapsed');
+    const btn = nav.querySelector('.nav-toggle-btn i');
+    if (nav.classList.contains('collapsed')) {
+        btn.className = 'fas fa-chevron-right';
+    } else {
+        btn.className = 'fas fa-chevron-left';
+    }
+}
+
+// 채팅 토글
+function toggleChat() {
+    const chat = document.getElementById('chatSidebar');
+    chat.classList.toggle('collapsed');
+    const btn = document.getElementById('chatToggleBtn').querySelector('i');
+    if (chat.classList.contains('collapsed')) {
+        btn.className = 'fas fa-chevron-left';
+    } else {
+        btn.className = 'fas fa-chevron-right';
+    }
+}
+
+// 네비게이션
+function initNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.section[id]');
+    const headerHeight = 90;
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                const targetPosition = targetSection.offsetTop - headerHeight;
+                window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+            }
+        });
+    });
+    
+    window.addEventListener('scroll', () => {
+        let current = '';
+        const scrollPos = window.scrollY + headerHeight + 50;
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+}
+
+// 아코디언 초기화
+function initAccordion() {
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const item = this.parentElement;
+            item.classList.toggle('active');
+        });
+    });
+}
+
+// 채팅 기능
+function handleChatKeypress(event) {
+    if (event.key === 'Enter') {
+        sendChatMessage();
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    const messagesContainer = document.getElementById('chatMessages');
+    
+    // 사용자 메시지 표시
+    messagesContainer.innerHTML += `
+        <div class="chat-message user">
+            <div class="message-content">${message}</div>
+        </div>
+    `;
+    input.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // AI 응답 로딩
+    const loadingId = 'loading-' + Date.now();
+    messagesContainer.innerHTML += `
+        <div class="chat-message bot" id="${loadingId}">
+            <div class="message-content"><i class="fas fa-spinner fa-spin"></i> 답변 생성 중...</div>
+        </div>
+    `;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    try {
+        const response = await fetch('/api/report/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                company_name: COMPANY_DATA.name,
+                question: message,
+                context: {
+                    ticker: COMPANY_DATA.ticker,
+                    market: COMPANY_DATA.market
+                }
+            })
+        });
+        
+        const result = await response.json();
+        const loadingEl = document.getElementById(loadingId);
+        
+        if (result.success && result.answer) {
+            loadingEl.querySelector('.message-content').textContent = result.answer;
+        } else {
+            loadingEl.querySelector('.message-content').textContent = '죄송합니다, 답변을 생성하지 못했습니다.';
+        }
+    } catch (error) {
+        const loadingEl = document.getElementById(loadingId);
+        loadingEl.querySelector('.message-content').textContent = '오류가 발생했습니다. 다시 시도해주세요.';
+    }
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initNavigation();
+    initAccordion();
+});
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock %}

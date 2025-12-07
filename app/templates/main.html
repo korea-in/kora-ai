@@ -16,17 +16,17 @@
                 <span>KORA AI</span>
             </div>
             <div class="nav-menu">
-                <a href="#" class="nav-link active">기업검색</a>
-                <a href="#" class="nav-link">분석보고서</a>
-                <a href="#" class="nav-link">관심목록</a>
-                <a href="#" class="nav-link">이용가이드</a>
+                <a href="/main" class="nav-link active">기업검색</a>
+                <a href="/reports" class="nav-link">보고서함</a>
+                <a href="/investment-type" class="nav-link">투자성향</a>
+                <a href="/about" class="nav-link">서비스소개</a>
             </div>
         </div>
         <div class="nav-right">
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
+            <div class="credit-badge">
+                <i class="fas fa-coins"></i>
+                <span id="user-credits">{{ user_credits if user_credits else 500 }}</span>
+            </div>
             <div class="user-profile">
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
@@ -34,9 +34,10 @@
                 <span class="user-name">{{ user_name }}</span>
                 <i class="fas fa-chevron-down"></i>
                 <div class="profile-dropdown">
-                    <a href="#"><i class="fas fa-user-cog"></i> 내 정보</a>
-                    <a href="#"><i class="fas fa-history"></i> 분석 기록</a>
-                    <a href="#"><i class="fas fa-star"></i> 관심 기업</a>
+                    <a href="/profile"><i class="fas fa-user-cog"></i> 내 정보</a>
+                    <a href="/reports"><i class="fas fa-folder-open"></i> 보고서함</a>
+                    <a href="/credits"><i class="fas fa-coins"></i> 크레딧 충전</a>
+                    <a href="/investment-type"><i class="fas fa-chart-pie"></i> 투자성향분석</a>
                     <hr>
                     <a href="/logout"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
                 </div>
@@ -79,19 +80,6 @@
                 <div class="search-results" id="search-results"></div>
             </div>
 
-            <!-- 랜덤 추천 -->
-            <div class="random-recommend-section">
-                <div class="random-header">
-                    <span class="random-title"><i class="fas fa-lightbulb"></i> 이런 기업은 어떠세요?</span>
-                    <button class="random-refresh-btn" id="random-refresh">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div class="random-chips-wrapper" id="random-chips-wrapper">
-                    <div class="random-chips" id="random-results"></div>
-                </div>
-            </div>
-
             <!-- 요청사항 섹션 -->
             <div class="request-section">
                 <div class="request-section-header">
@@ -121,9 +109,9 @@
                         <i class="fas fa-newspaper"></i>
                         <span>뉴스/시장 반응</span>
                     </button>
-                    <button class="action-chip" data-request="경쟁사와 비교 분석해줘">
-                        <i class="fas fa-balance-scale"></i>
-                        <span>경쟁사 비교</span>
+                    <button class="action-chip" data-request="이 기업이 속한 업종과 시장 현황을 분석해줘">
+                        <i class="fas fa-industry"></i>
+                        <span>업종/시장 분석</span>
                     </button>
                 </div>
 
@@ -132,9 +120,6 @@
                     <div class="custom-input-box">
                         <i class="fas fa-pen"></i>
                         <input type="text" id="custom-request" placeholder="직접 질문을 입력하세요..." autocomplete="off">
-                        <button class="custom-submit-btn" id="custom-submit">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 import csv
 import os
-import random
 
 company_bp = Blueprint('company', __name__)
 
@@ -77,30 +76,115 @@ def search_companies():
     
     return jsonify(results)
 
-@company_bp.route('/companies/random')
-def random_companies():
-    """Get random 5 companies from selected market"""
-    market = request.args.get('market', 'kospi').lower()
-    
-    companies = get_companies(market)
-    
-    if len(companies) < 5:
-        return jsonify(companies)
-    
-    random_selection = random.sample(companies, 5)
-    return jsonify(random_selection)
-
 @company_bp.route('/companies/popular')
 def popular_companies():
-    """Get popular companies (mock data for now)"""
-    # 인기 회사 목록 (실제로는 조회수 기반으로 구현)
-    kospi_companies = get_companies('kospi')[:10]
-    kosdaq_companies = get_companies('kosdaq')[:10]
-    
-    return jsonify({
-        'kospi': kospi_companies,
-        'kosdaq': kosdaq_companies
-    })
+    """Get popular companies based on report analysis count"""
+    try:
+        from app.services.firebase import get_popular_companies, get_report_based_popular
+        
+        # 보고서 기반 인기 기업 조회 (우선)
+        report_popular = get_report_based_popular()
+        
+        kospi_from_reports = [c for c in report_popular if c.get('market', 'KOSPI').upper() == 'KOSPI'][:10]
+        kosdaq_from_reports = [c for c in report_popular if c.get('market', 'KOSDAQ').upper() == 'KOSDAQ'][:10]
+        
+        # 보고서 기반 데이터가 충분하면 사용
+        if len(kospi_from_reports) >= 3:
+            kospi_result = [
+                {
+                    'code': c['ticker'],
+                    'name': c['company_name'],
+                    'short_name': c['company_name'],
+                    'market': 'KOSPI',
+                    'view_count': c.get('analysis_count', 0)
+                }
+                for c in kospi_from_reports
+            ]
+        else:
+            # 기존 조회수 기반 데이터 사용
+            kospi_popular = get_popular_companies('KOSPI', limit=10)
+            if kospi_popular:
+                kospi_result = [
+                    {
+                        'code': c.company_code,
+                        'name': c.company_name,
+                        'short_name': c.company_name,
+                        'market': 'KOSPI',
+                        'view_count': c.view_count
+                    }
+                    for c in kospi_popular
+                ]
+            else:
+                kospi_result = get_companies('kospi')[:10]
+                for c in kospi_result:
+                    c['view_count'] = 0
+        
+        if len(kosdaq_from_reports) >= 3:
+            kosdaq_result = [
+                {
+                    'code': c['ticker'],
+                    'name': c['company_name'],
+                    'short_name': c['company_name'],
+                    'market': 'KOSDAQ',
+                    'view_count': c.get('analysis_count', 0)
+                }
+                for c in kosdaq_from_reports
+            ]
+        else:
+            kosdaq_popular = get_popular_companies('KOSDAQ', limit=10)
+            if kosdaq_popular:
+                kosdaq_result = [
+                    {
+                        'code': c.company_code,
+                        'name': c.company_name,
+                        'short_name': c.company_name,
+                        'market': 'KOSDAQ',
+                        'view_count': c.view_count
+                    }
+                    for c in kosdaq_popular
+                ]
+            else:
+                kosdaq_result = get_companies('kosdaq')[:10]
+                for c in kosdaq_result:
+                    c['view_count'] = 0
+        
+        return jsonify({
+            'kospi': kospi_result,
+            'kosdaq': kosdaq_result
+        })
+        
+    except Exception as e:
+        print(f"Error getting popular companies: {e}")
+        # 오류 시 기본 목록 반환
+        kospi_companies = get_companies('kospi')[:10]
+        kosdaq_companies = get_companies('kosdaq')[:10]
+        
+        return jsonify({
+            'kospi': kospi_companies,
+            'kosdaq': kosdaq_companies
+        })
+
+
+@company_bp.route('/companies/view', methods=['POST'])
+def record_company_view():
+    """Record company view for popularity tracking"""
+    try:
+        data = request.get_json()
+        market = data.get('market', 'KOSPI').upper()
+        company_code = data.get('code', '')
+        company_name = data.get('name', '')
+        
+        if not company_code:
+            return jsonify({"success": False, "error": "코드가 필요합니다."})
+        
+        from app.services.firebase import increment_company_view
+        
+        success = increment_company_view(market, company_code, company_name)
+        
+        return jsonify({"success": success})
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 
 @company_bp.route('/companies/corp-code')
@@ -167,23 +251,43 @@ def load_dart_corp_list(api_key):
         url = "https://opendart.fss.or.kr/api/corpCode.xml"
         params = {"crtfc_key": api_key}
         
-        response = requests.get(url, params=params)
+        print(f"[DART] Requesting corp list from API...")
+        response = requests.get(url, params=params, timeout=30)
         
-        if response.status_code == 200:
-            # ZIP 파일 압축 해제
-            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-                with z.open('CORPCODE.xml') as f:
-                    tree = ET.parse(f)
-                    root = tree.getroot()
+        print(f"[DART] Response status: {response.status_code}, size: {len(response.content)} bytes")
+        
+        if response.status_code != 200:
+            print(f"[DART] API error: HTTP {response.status_code}")
+            return
+        
+        # 응답이 ZIP 파일인지 확인 (ZIP 파일은 PK로 시작)
+        if not response.content.startswith(b'PK'):
+            # ZIP이 아니면 에러 응답 (JSON 또는 XML)
+            try:
+                error_text = response.content.decode('utf-8')[:500]
+                print(f"[DART] API returned non-ZIP response: {error_text}")
+            except:
+                print(f"[DART] API returned non-ZIP response (unable to decode)")
+            return
+        
+        # ZIP 파일 압축 해제
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            with z.open('CORPCODE.xml') as f:
+                tree = ET.parse(f)
+                root = tree.getroot()
+                
+                for corp in root.findall('list'):
+                    stock_code = corp.findtext('stock_code', '').strip()
+                    corp_code = corp.findtext('corp_code', '').strip()
                     
-                    for corp in root.findall('list'):
-                        stock_code = corp.findtext('stock_code', '').strip()
-                        corp_code = corp.findtext('corp_code', '').strip()
-                        
-                        if stock_code:
-                            _dart_corp_cache[stock_code] = corp_code
+                    if stock_code:
+                        _dart_corp_cache[stock_code] = corp_code
         
-        print(f"DART corp list loaded: {len(_dart_corp_cache)} companies")
+        print(f"[DART] Corp list loaded successfully: {len(_dart_corp_cache)} companies")
         
+    except zipfile.BadZipFile as e:
+        print(f"[DART] BadZipFile error: API may have returned an error message instead of ZIP")
+    except requests.exceptions.Timeout:
+        print(f"[DART] Request timeout - API may be slow or unavailable")
     except Exception as e:
-        print(f"Error loading DART corp list: {e}")
+        print(f"[DART] Error loading corp list: {type(e).__name__}: {e}")

@@ -166,6 +166,9 @@ def login():
     session['user_id'] = user.uid
     session['user_email'] = user.email
     session['user_name'] = user.display_name
+    session['user_credits'] = user.credits
+    session['investment_type'] = getattr(user, 'investment_type', '') or ''
+    session['investment_score'] = getattr(user, 'investment_score', 0) or 0
     
     if request.is_json:
         return jsonify({
@@ -175,7 +178,8 @@ def login():
                 'email': user.email,
                 'name': user.display_name,
                 'subscription_tier': user.subscription_tier,
-                'analysis_count': user.analysis_count
+                'analysis_count': user.analysis_count,
+                'credits': user.credits
             }
         })
     

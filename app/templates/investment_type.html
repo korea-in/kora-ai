@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}투자성향분석 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/investment_type.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="investment-container">
+    <!-- 헤더 -->
+    <header class="investment-header">
+        <div class="header-left">
+            <a href="/main" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <h1><i class="fas fa-chart-pie"></i> 투자성향분석</h1>
+                <p>나의 투자 성향을 알아보고 맞춤형 조언을 받아보세요</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- 소개 섹션 -->
+    <section class="intro-section" id="introSection">
+        <div class="intro-content">
+            <div class="intro-illustration">
+                <div class="illustration-icons">
+                    <div class="icon-circle safe"><i class="fas fa-shield-alt"></i></div>
+                    <div class="icon-circle moderate"><i class="fas fa-balance-scale"></i></div>
+                    <div class="icon-circle aggressive"><i class="fas fa-rocket"></i></div>
+                </div>
+            </div>
+            <h2>투자성향분석이란?</h2>
+            <p>
+                투자성향분석은 개인의 위험 감수 성향, 투자 경험, 재정 상황 등을 종합적으로 평가하여<br>
+                적합한 투자 유형을 진단하는 서비스입니다.
+            </p>
+            <div class="intro-features">
+                <div class="feature">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>간단한 10문항</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-clock"></i>
+                    <span>약 3분 소요</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-chart-line"></i>
+                    <span>맞춤 분석 제공</span>
+                </div>
+            </div>
+            <button class="btn-start" onclick="startAnalysis()">
+                <i class="fas fa-play"></i> 분석 시작하기
+            </button>
+        </div>
+    </section>
+
+    <!-- 진단 섹션 -->
+    <section class="quiz-section hidden" id="quizSection">
+        <div class="quiz-progress">
+            <div class="progress-info">
+                <span>질문 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <!-- 동적으로 질문이 로드됩니다 -->
+        </div>
+
+        <div class="quiz-navigation">
+            <button class="btn-prev" id="prevBtn" onclick="prevQuestion()" disabled>
+                <i class="fas fa-arrow-left"></i> 이전
+            </button>
+            <button class="btn-next" id="nextBtn" onclick="nextQuestion()">
+                다음 <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- 결과 섹션 -->
+    <section class="result-section hidden" id="resultSection">
+        <div class="result-card">
+            <div class="result-header">
+                <div class="result-badge" id="resultBadge">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>나의 투자 성향</h2>
+            </div>
+            
+            <div class="result-type" id="resultType">
+                <!-- 결과 유형 -->
+            </div>
+            
+            <div class="result-score">
+                <span class="score-label">투자성향 점수</span>
+                <div class="score-bar">
+                    <div class="score-fill" id="scoreFill"></div>
+                    <span class="score-value" id="scoreValue">0</span>
+                </div>
+                <div class="score-labels">
+                    <span>안정</span>
+                    <span>공격</span>
+                </div>
+            </div>
+
+            <div class="result-description" id="resultDescription">
+                <!-- 설명 -->
+            </div>
+
+            <div class="result-recommendations" id="resultRecommendations">
+                <h3><i class="fas fa-lightbulb"></i> 투자 조언</h3>
+                <ul>
+                    <!-- 추천사항 -->
+                </ul>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn-retry" onclick="retryAnalysis()">
+                    <i class="fas fa-redo"></i> 다시 진단하기
+                </button>
+                <a href="/main" class="btn-primary">
+                    <i class="fas fa-search"></i> 기업 분석하러 가기
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/investment_type.js') }}"></script>
+{% endblock %}
+
+
+
+

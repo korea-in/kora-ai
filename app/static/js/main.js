@@ -12,16 +12,12 @@ function initMainPage() {
     let selectedMarket = 'kospi';
     let selectedCompany = null;
     let selectedRequest = null;
-    let randomRefreshInterval = null;
-    const REFRESH_INTERVAL = 5000; // 5초
     
     // Elements
     const marketChips = document.querySelectorAll('.market-chip');
     const searchInput = document.getElementById('company-search');
     const clearSearchBtn = document.getElementById('clear-search');
     const searchResults = document.getElementById('search-results');
-    const randomResults = document.getElementById('random-results');
-    const randomRefreshBtn = document.getElementById('random-refresh');
     const actionChips = document.querySelectorAll('.action-chip');
     const customRequestInput = document.getElementById('custom-request');
     const customSubmitBtn = document.getElementById('custom-submit');
@@ -44,9 +40,6 @@ function initMainPage() {
             if (searchResults) searchResults.classList.remove('active');
             selectedCompany = null;
             updateReportButton();
-            
-            // Restart random refresh
-            startRandomRefresh();
         });
     });
     
@@ -122,107 +115,30 @@ function initMainPage() {
             `).join('');
             
             searchResults.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    selectCompany(this.dataset.code, this.dataset.name);
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    
+                    const code = this.dataset.code;
+                    const name = this.dataset.name;
+                    
+                    // 검색 결과 먼저 닫기
                     searchResults.classList.remove('active');
-                    if (searchInput) searchInput.value = this.dataset.name;
+                    
+                    // 검색 타이머 취소 (중복 검색 방지)
+                    clearTimeout(searchTimeout);
+                    
+                    // 검색창 값 설정 (input 이벤트 발생 방지를 위해 직접 설정)
+                    if (searchInput) {
+                        searchInput.value = name;
+                    }
+                    
+                    // 기업 선택
+                    selectCompany(code, name);
                 });
             });
         }
         searchResults.classList.add('active');
-    }
-    
-    // ==========================================
-    // Random Recommendations (5초 자동 새로고침)
-    // ==========================================
-    
-    function startRandomRefresh() {
-        if (randomRefreshInterval) clearInterval(randomRefreshInterval);
-        
-        loadRandomCompanies();
-        
-        randomRefreshInterval = setInterval(() => {
-            loadRandomCompanies();
-        }, REFRESH_INTERVAL);
-    }
-    
-    if (randomRefreshBtn) {
-        randomRefreshBtn.addEventListener('click', function() {
-            if (randomRefreshInterval) clearInterval(randomRefreshInterval);
-            
-            loadRandomCompanies();
-            
-            randomRefreshInterval = setInterval(() => {
-                loadRandomCompanies();
-            }, REFRESH_INTERVAL);
-        });
-    }
-    
-    async function loadRandomCompanies() {
-        if (!randomResults) return;
-        
-        try {
-            const currentChips = randomResults.querySelectorAll('.random-chip');
-            currentChips.forEach(chip => chip.classList.add('fade-out'));
-            
-            await new Promise(resolve => setTimeout(resolve, 400));
-            
-            const response = await fetch(`/api/companies/random?market=${selectedMarket}`);
-            const companies = await response.json();
-            
-            displayRandomResults(companies);
-        } catch (error) {
-            console.error('Random error:', error);
-        }
-    }
-    
-    function displayRandomResults(companies) {
-        if (!randomResults) return;
-        
-        randomResults.innerHTML = companies.map(company => `
-            <div class="random-chip fade-in" data-code="${company.code}" data-name="${company.short_name || company.name}">
-                ${company.short_name || company.name}
-            </div>
-        `).join('');
-        
-        randomResults.querySelectorAll('.random-chip').forEach(chip => {
-            chip.addEventListener('click', function() {
-                selectCompany(this.dataset.code, this.dataset.name);
-                if (searchInput) searchInput.value = this.dataset.name;
-            });
-        });
-        
-        // Check for overflow and update fade effect
-        setTimeout(() => updateRandomChipsOverflow(), 100);
-    }
-    
-    // Check if random chips container has overflow
-    function updateRandomChipsOverflow() {
-        const wrapper = document.getElementById('random-chips-wrapper');
-        if (!wrapper || !randomResults) return;
-        
-        const hasOverflow = randomResults.scrollWidth > randomResults.clientWidth;
-        const scrollLeft = randomResults.scrollLeft;
-        const maxScroll = randomResults.scrollWidth - randomResults.clientWidth;
-        
-        // Show/hide left fade
-        if (scrollLeft > 5) {
-            wrapper.classList.add('has-overflow-left');
-        } else {
-            wrapper.classList.remove('has-overflow-left');
-        }
-        
-        // Show/hide right fade
-        if (hasOverflow && scrollLeft < maxScroll - 5) {
-            wrapper.classList.add('has-overflow-right');
-        } else {
-            wrapper.classList.remove('has-overflow-right');
-        }
-    }
-    
-    // Listen for scroll on random chips
-    if (randomResults) {
-        randomResults.addEventListener('scroll', updateRandomChipsOverflow);
     }
     
     // ==========================================
@@ -312,16 +228,11 @@ function initMainPage() {
     }
     
     function formatViewCount(count) {
+        if (!count || count === 0) return '0';
         if (count >= 1000) {
             return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
         }
         return count.toString();
-    }
-    
-    function generateViewCount(index) {
-        const baseViews = Math.floor(Math.random() * 5000) + 500;
-        const rankBonus = (10 - index) * 300;
-        return baseViews + rankBonus;
     }
     
     function displayTrendingCompanies(elementId, companies) {
@@ -329,7 +240,8 @@ function initMainPage() {
         if (!container || !companies) return;
         
         container.innerHTML = companies.map((company, index) => {
-            const views = generateViewCount(index);
+            // 실제 조회수가 있으면 사용, 없으면 0 표시
+            const views = company.view_count || 0;
             return `
                 <div class="trending-item" data-code="${company.code}" data-name="${company.short_name || company.name}">
                     <span class="trending-rank">${index + 1}</span>
@@ -374,6 +286,26 @@ function initMainPage() {
     function selectCompany(code, name) {
         selectedCompany = { code, name };
         updateReportButton();
+        
+        // 조회수 기록 (인기 기업 추적용)
+        recordCompanyView(code, name, selectedMarket);
+    }
+    
+    // 기업 조회 기록
+    async function recordCompanyView(code, name, market) {
+        try {
+            await fetch('/api/companies/view', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: code,
+                    name: name,
+                    market: market.toUpperCase()
+                })
+            });
+        } catch (error) {
+            console.error('Error recording view:', error);
+        }
     }
     
     function updateReportButton() {
@@ -389,15 +321,34 @@ function initMainPage() {
                 return;
             }
             
-            // DART corp_code 조회
+            // 먼저 크레딧 확인
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-hourglass-half"></i> 준비 중...';
+            this.innerHTML = '<i class="fas fa-hourglass-half"></i> 크레딧 확인 중...';
             
             try {
+                // 크레딧 체크
+                const creditResponse = await fetch('/api/credits/check');
+                const creditData = await creditResponse.json();
+                
+                const REQUIRED_CREDITS = 300;
+                
+                if (!creditData.success || creditData.credits < REQUIRED_CREDITS) {
+                    const currentCredits = creditData.credits || 0;
+                    alert(`크레딧이 부족합니다.\n\n필요: ${REQUIRED_CREDITS} 크레딧\n보유: ${currentCredits} 크레딧\n\n크레딧 충전 페이지로 이동합니다.`);
+                    window.location.href = '/credits';
+                    return;
+                }
+                
+                this.innerHTML = '<i class="fas fa-hourglass-half"></i> 준비 중...';
+                
+                // DART corp_code 조회
                 const corpResponse = await fetch(`/api/companies/corp-code?ticker=${selectedCompany.code}`);
                 const corpData = await corpResponse.json();
                 
                 const corpCode = corpData.corp_code || '';
+                
+                // 요청사항 가져오기
+                const requestText = customRequestInput?.value.trim() || '';
                 
                 // 보고서 페이지로 이동
                 const params = new URLSearchParams({
@@ -407,17 +358,17 @@ function initMainPage() {
                     market: selectedMarket.toUpperCase()
                 });
                 
+                // 요청사항이 있으면 추가
+                if (requestText) {
+                    params.append('request', requestText);
+                }
+                
                 window.location.href = `/report?${params.toString()}`;
             } catch (error) {
-                console.error('Error getting corp_code:', error);
-                // corp_code 없이도 이동 (일부 기능 제한될 수 있음)
-                const params = new URLSearchParams({
-                    company: selectedCompany.name,
-                    ticker: selectedCompany.code,
-                    corp_code: '',
-                    market: selectedMarket.toUpperCase()
-                });
-                window.location.href = `/report?${params.toString()}`;
+                console.error('Error:', error);
+                alert('오류가 발생했습니다. 다시 시도해주세요.');
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-chart-line"></i> 요약 보고서 생성';
             }
         });
     }
@@ -426,7 +377,6 @@ function initMainPage() {
     // Initialize
     // ==========================================
     
-    startRandomRefresh();
     loadTrendingCompanies();
 }
 

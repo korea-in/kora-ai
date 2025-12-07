@@ -13,6 +13,95 @@
 </head>
 <body>
     {% block content %}{% endblock %}
+    
+    {% block footer %}
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- 회사 정보 -->
+            <div class="footer-company">
+                <div class="footer-logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>KORA AI</span>
+                </div>
+                <p class="footer-tagline">AI 기반 실시간 기업 분석 서비스</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-link" title="Blog"><i class="fas fa-blog"></i></a>
+                </div>
+            </div>
+            
+            <!-- 서비스 링크 -->
+            <div class="footer-links">
+                <h4>서비스</h4>
+                <ul>
+                    <li><a href="/about">서비스 소개</a></li>
+                    <li><a href="/main">기업 분석</a></li>
+                    <li><a href="/reports">보고서함</a></li>
+                    <li><a href="/investment-type">투자성향분석</a></li>
+                </ul>
+            </div>
+            
+            <!-- 고객지원 -->
+            <div class="footer-links">
+                <h4>고객지원</h4>
+                <ul>
+                    <li><a href="/profile">마이페이지</a></li>
+                    <li><a href="/credits">크레딧 충전</a></li>
+                    <li><a href="#">자주 묻는 질문</a></li>
+                    <li><a href="#">1:1 문의</a></li>
+                </ul>
+            </div>
+            
+            <!-- 연락처 -->
+            <div class="footer-contact">
+                <h4>KORA LAB</h4>
+                <ul>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>서울특별시 중구 서소문로 135 연호빌딩 8층</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>02-2151-3077</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>support@koralab.com</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock"></i>
+                        <span>평일 09:00 - 18:00</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 하단 바 -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-content">
+                <p class="copyright">&copy; 2025 KORA LAB. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="#">이용약관</a>
+                    <span class="divider">|</span>
+                    <a href="#">개인정보처리방침</a>
+                    <span class="divider">|</span>
+                    <a href="#">투자 유의사항</a>
+                </div>
+                <div class="footer-partners">
+                    <span>Data Partners:</span>
+                    <img src="https://opendart.fss.or.kr/images/logo.png" alt="DART" onerror="this.style.display='none'">
+                    <span class="partner-text">DART</span>
+                    <span class="partner-text">NAVER</span>
+                    <span class="partner-text">KRX</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}보고서함 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- 상단 네비게이션 바 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>KORA AI</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/main" class="nav-link">기업검색</a>
+                <a href="/reports" class="nav-link active">보고서함</a>
+                <a href="/investment-type" class="nav-link">투자성향</a>
+                <a href="/about" class="nav-link">서비스소개</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="credit-badge">
+                <i class="fas fa-coins"></i>
+                <span id="userCredits">{{ user_credits if user_credits else 500 }}</span>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span class="user-name">{{ user_name if user_name else '사용자' }}</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="profile-dropdown">
+                    <a href="/profile"><i class="fas fa-user-cog"></i> 내 정보</a>
+                    <a href="/reports"><i class="fas fa-folder-open"></i> 보고서함</a>
+                    <a href="/credits"><i class="fas fa-coins"></i> 크레딧 충전</a>
+                    <a href="/investment-type"><i class="fas fa-chart-pie"></i> 투자성향분석</a>
+                    <hr>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="reports-container">
+
+    <!-- 탭 네비게이션 -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="my-reports">
+                <i class="fas fa-user"></i>
+                <span>내 보고서</span>
+                <span class="tab-count" id="myReportsCount">0</span>
+            </button>
+            <button class="tab-btn" data-tab="public-reports">
+                <i class="fas fa-globe"></i>
+                <span>공개 보고서</span>
+                <span class="tab-count" id="publicReportsCount">0</span>
+            </button>
+        </div>
+        
+        <!-- 검색 및 필터 -->
+        <div class="reports-filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="reportSearch" placeholder="기업명으로 검색...">
+            </div>
+            <select id="marketFilter" class="filter-select">
+                <option value="all">전체 시장</option>
+                <option value="KOSPI">KOSPI</option>
+                <option value="KOSDAQ">KOSDAQ</option>
+            </select>
+            <select id="sortFilter" class="filter-select">
+                <option value="recent">최신순</option>
+                <option value="company">기업명순</option>
+                <option value="score">점수순</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 내 보고서 탭 -->
+    <div class="tab-content active" id="my-reports">
+        <div class="reports-grid" id="myReportsGrid">
+            <!-- 로딩 상태 -->
+            <div class="reports-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>보고서를 불러오는 중...</p>
+            </div>
+        </div>
+        
+        <!-- 빈 상태 -->
+        <div class="empty-state hidden" id="myReportsEmpty">
+            <div class="empty-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h3>아직 생성한 보고서가 없습니다</h3>
+            <p>기업을 검색하고 AI 분석 보고서를 생성해보세요</p>
+            <a href="/main" class="btn-primary">
+                <i class="fas fa-plus"></i> 첫 보고서 생성하기
+            </a>
+        </div>
+    </div>
+
+    <!-- 공개 보고서 탭 -->
+    <div class="tab-content" id="public-reports">
+        <div class="public-info-banner">
+            <i class="fas fa-info-circle"></i>
+            <span>다른 사용자의 보고서를 열람하면 <strong>100 크레딧</strong>이 차감됩니다</span>
+        </div>
+        
+        <div class="reports-grid" id="publicReportsGrid">
+            <!-- 로딩 상태 -->
+            <div class="reports-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>보고서를 불러오는 중...</p>
+            </div>
+        </div>
+        
+        <!-- 빈 상태 -->
+        <div class="empty-state hidden" id="publicReportsEmpty">
+            <div class="empty-icon">
+                <i class="fas fa-globe"></i>
+            </div>
+            <h3>아직 공개된 보고서가 없습니다</h3>
+            <p>다른 사용자가 공개한 보고서가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <!-- 보고서 상세 모달 -->
+    <div class="modal-overlay hidden" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">보고서 상세</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 동적 콘텐츠 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">닫기</button>
+                <a href="#" class="btn-primary" id="modalViewBtn">
+                    <i class="fas fa-external-link-alt"></i> 전체 보고서 보기
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script>
+    const USER_ID = "{{ user_id if user_id else '' }}";
+</script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+<script>
+    // 프로필 드롭다운 토글
+    document.querySelector('.user-profile')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        this.classList.toggle('active');
+    });
+    document.addEventListener('click', function() {
+        document.querySelector('.user-profile')?.classList.remove('active');
+    });
+</script>
+{% endblock %}
+
+
+

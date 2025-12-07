@@ -55,6 +55,16 @@ class User:
     daily_analysis_limit: int = 5           # 일일 분석 제한 횟수
     daily_analysis_used: int = 0            # 오늘 사용한 분석 횟수
     
+    # 크레딧 시스템
+    credits: int = 500                      # 보유 크레딧 (회원가입시 500 지급)
+    total_credits_used: int = 0             # 총 사용한 크레딧
+    total_credits_purchased: int = 0        # 총 구매한 크레딧
+    
+    # 투자 성향 분석
+    investment_type: Optional[str] = None           # 투자 성향 (안정형/안정추구형/위험중립형/적극투자형/공격투자형)
+    investment_score: Optional[int] = None          # 투자 성향 점수 (0~100)
+    investment_analysis_date: Optional[datetime] = None  # 투자 성향 분석 일자
+    
     # 설정
     email_notifications: bool = True        # 이메일 알림 수신
     push_notifications: bool = True         # 푸시 알림 수신
@@ -83,6 +93,11 @@ class User:
             'subscription_tier': self.subscription_tier,
             'daily_analysis_limit': self.daily_analysis_limit,
             'daily_analysis_used': self.daily_analysis_used,
+            'credits': self.credits,
+            'total_credits_used': self.total_credits_used,
+            'total_credits_purchased': self.total_credits_purchased,
+            'investment_type': self.investment_type,
+            'investment_score': self.investment_score,
             'email_notifications': self.email_notifications,
             'push_notifications': self.push_notifications,
             'is_active': self.is_active,
@@ -90,7 +105,7 @@ class User:
         }
         
         # datetime 필드는 Firestore SERVER_TIMESTAMP 사용을 위해 별도 처리
-        # created_at, updated_at, last_login_at은 저장 시 처리
+        # created_at, updated_at, last_login_at, investment_analysis_date은 저장 시 처리
         
         return data
     
@@ -120,6 +135,12 @@ class User:
             subscription_tier=data.get('subscription_tier', 'free'),
             daily_analysis_limit=data.get('daily_analysis_limit', 5),
             daily_analysis_used=data.get('daily_analysis_used', 0),
+            credits=data.get('credits', 500),
+            total_credits_used=data.get('total_credits_used', 0),
+            total_credits_purchased=data.get('total_credits_purchased', 0),
+            investment_type=data.get('investment_type'),
+            investment_score=data.get('investment_score'),
+            investment_analysis_date=data.get('investment_analysis_date'),
             email_notifications=data.get('email_notifications', True),
             push_notifications=data.get('push_notifications', True),
             created_at=data.get('created_at'),
@@ -150,6 +171,35 @@ class User:
     def get_remaining_analyses(self) -> int:
         """남은 분석 횟수"""
         return max(0, self.daily_analysis_limit - self.daily_analysis_used)
+    
+    def has_credits(self, amount: int) -> bool:
+        """크레딧 보유 여부 확인"""
+        return self.credits >= amount
+    
+    def use_credits(self, amount: int) -> bool:
+        """크레딧 사용 (성공 시 True 반환)"""
+        if self.has_credits(amount):
+            self.credits -= amount
+            self.total_credits_used += amount
+            return True
+        return False
+    
+    def add_credits(self, amount: int, is_purchase: bool = False) -> None:
+        """크레딧 추가"""
+        self.credits += amount
+        if is_purchase:
+            self.total_credits_purchased += amount
+    
+    def get_investment_type_label(self) -> str:
+        """투자 성향 한글 라벨 반환"""
+        labels = {
+            'conservative': '안정형',
+            'moderately_conservative': '안정추구형',
+            'moderate': '위험중립형',
+            'moderately_aggressive': '적극투자형',
+            'aggressive': '공격투자형'
+        }
+        return labels.get(self.investment_type, '미분석')
     
     def __repr__(self) -> str:
         return f"User(uid={self.uid}, email={self.email}, name={self.display_name})"

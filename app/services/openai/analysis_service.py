@@ -99,6 +99,12 @@ def chat_completion(
         응답 텍스트
     """
     try:
+        # API 키 확인
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            print("[chat_completion] ERROR: OPENAI_API_KEY is not set!")
+            return None
+        
         kwargs = {
             "model": model,
             "messages": messages,
@@ -113,7 +119,9 @@ def chat_completion(
         response = client.chat.completions.create(**kwargs)
         return response.choices[0].message.content
     except Exception as e:
-        print(f"OpenAI API Error: {e}")
+        print(f"[chat_completion] OpenAI API Error: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -129,6 +137,8 @@ def chat_completion_json(
     Returns:
         파싱된 JSON 딕셔너리
     """
+    print(f"[chat_completion_json] Calling OpenAI with model={model}, temp={temperature}, max_tokens={max_tokens}")
+    
     response = chat_completion(
         messages=messages,
         model=model,
@@ -138,11 +148,17 @@ def chat_completion_json(
     )
     
     if response:
+        print(f"[chat_completion_json] Got response, length: {len(response)} chars")
         try:
-            return json.loads(response)
+            result = json.loads(response)
+            print(f"[chat_completion_json] JSON parsed successfully, keys: {list(result.keys())[:5]}")
+            return result
         except json.JSONDecodeError as e:
-            print(f"JSON Parse Error: {e}")
+            print(f"[chat_completion_json] JSON Parse Error: {e}")
+            print(f"[chat_completion_json] Response snippet: {response[:500]}...")
             return None
+    else:
+        print("[chat_completion_json] No response from chat_completion")
     return None
 
 

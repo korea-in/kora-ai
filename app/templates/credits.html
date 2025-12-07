@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}크레딧 충전 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/credits.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="credits-container">
+    <!-- 헤더 -->
+    <header class="credits-header">
+        <div class="header-left">
+            <a href="/main" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <h1><i class="fas fa-coins"></i> 크레딧 충전</h1>
+                <p>필요한 만큼만 충전하고 사용하세요</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="credits-content">
+        <!-- 현재 크레딧 현황 -->
+        <div class="current-credits-card">
+            <div class="credit-info">
+                <span class="label">현재 보유 크레딧</span>
+                <div class="credit-amount">
+                    <i class="fas fa-coins"></i>
+                    <span id="currentCredits">{{ user_credits if user_credits else 500 }}</span>
+                </div>
+            </div>
+            <div class="credit-stats">
+                <div class="stat">
+                    <span class="stat-value" id="totalUsed">{{ total_used if total_used else 0 }}</span>
+                    <span class="stat-label">총 사용</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="totalPurchased">{{ total_purchased if total_purchased else 0 }}</span>
+                    <span class="stat-label">총 충전</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 크레딧 패키지 -->
+        <section class="packages-section">
+            <h2>충전 패키지</h2>
+            <div class="packages-grid">
+                <div class="package-card" data-amount="1000" data-price="1000">
+                    <div class="package-badge">입문</div>
+                    <div class="package-credits">
+                        <i class="fas fa-coins"></i>
+                        <span class="amount">1,000</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                    <div class="package-price">₩1,000</div>
+                    <p class="package-desc">보고서 3건 생성 가능</p>
+                    <button class="btn-package" onclick="selectPackage(1000, 1000)">선택</button>
+                </div>
+                
+                <div class="package-card popular" data-amount="3000" data-price="2500">
+                    <div class="package-badge">인기</div>
+                    <div class="package-credits">
+                        <i class="fas fa-coins"></i>
+                        <span class="amount">3,000</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                    <div class="package-price">
+                        <span class="original">₩3,000</span>
+                        ₩2,500
+                    </div>
+                    <p class="package-desc">보고서 10건 생성 가능</p>
+                    <div class="package-bonus">+500 보너스</div>
+                    <button class="btn-package" onclick="selectPackage(3000, 2500)">선택</button>
+                </div>
+                
+                <div class="package-card" data-amount="5000" data-price="4000">
+                    <div class="package-badge">실속</div>
+                    <div class="package-credits">
+                        <i class="fas fa-coins"></i>
+                        <span class="amount">5,000</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                    <div class="package-price">
+                        <span class="original">₩5,000</span>
+                        ₩4,000
+                    </div>
+                    <p class="package-desc">보고서 16건 생성 가능</p>
+                    <div class="package-bonus">+1,000 보너스</div>
+                    <button class="btn-package" onclick="selectPackage(5000, 4000)">선택</button>
+                </div>
+                
+                <div class="package-card best" data-amount="10000" data-price="7000">
+                    <div class="package-badge">최고혜택</div>
+                    <div class="package-credits">
+                        <i class="fas fa-coins"></i>
+                        <span class="amount">10,000</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                    <div class="package-price">
+                        <span class="original">₩10,000</span>
+                        ₩7,000
+                    </div>
+                    <p class="package-desc">보고서 33건 생성 가능</p>
+                    <div class="package-bonus">+3,000 보너스</div>
+                    <button class="btn-package" onclick="selectPackage(10000, 7000)">선택</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 크레딧 사용 안내 -->
+        <section class="usage-section">
+            <h2>크레딧 사용 안내</h2>
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <div class="usage-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="usage-info">
+                        <h3>요약 보고서 생성</h3>
+                        <p>AI가 분석한 기업 종합 보고서</p>
+                    </div>
+                    <div class="usage-cost">
+                        <span class="cost">300</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                </div>
+                
+                <div class="usage-card">
+                    <div class="usage-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="usage-info">
+                        <h3>공개 보고서 열람</h3>
+                        <p>다른 사용자가 생성한 보고서</p>
+                    </div>
+                    <div class="usage-cost">
+                        <span class="cost">100</span>
+                        <span class="unit">크레딧</span>
+                    </div>
+                </div>
+                
+                <div class="usage-card free">
+                    <div class="usage-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="usage-info">
+                        <h3>기업 검색</h3>
+                        <p>KOSPI/KOSDAQ 기업 검색</p>
+                    </div>
+                    <div class="usage-cost free">
+                        <span class="cost">무료</span>
+                    </div>
+                </div>
+                
+                <div class="usage-card free">
+                    <div class="usage-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="usage-info">
+                        <h3>투자성향 분석</h3>
+                        <p>나의 투자 성향 진단</p>
+                    </div>
+                    <div class="usage-cost free">
+                        <span class="cost">무료</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 충전 내역 -->
+        <section class="history-section">
+            <h2>최근 이용 내역</h2>
+            <div class="history-list" id="creditHistory">
+                <div class="history-item">
+                    <div class="history-info">
+                        <span class="history-type use">사용</span>
+                        <span class="history-desc">삼성전자 요약 보고서 생성</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="history-amount minus">-300</span>
+                        <span class="history-date">2025-12-05 21:30</span>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-info">
+                        <span class="history-type charge">충전</span>
+                        <span class="history-desc">3,000 크레딧 패키지 구매</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="history-amount plus">+3,000</span>
+                        <span class="history-date">2025-12-05 20:00</span>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-info">
+                        <span class="history-type bonus">보너스</span>
+                        <span class="history-desc">회원가입 보너스</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="history-amount plus">+500</span>
+                        <span class="history-date">2025-12-05 09:00</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 결제 모달 -->
+    <div class="modal-overlay hidden" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>크레딧 충전</h2>
+                <button class="modal-close" onclick="closePaymentModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span>충전 크레딧</span>
+                        <span id="modalCredits">0 크레딧</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>결제 금액</span>
+                        <span id="modalPrice">₩0</span>
+                    </div>
+                </div>
+                
+                <div class="payment-methods">
+                    <h3>결제 수단 선택</h3>
+                    <div class="method-options">
+                        <label class="method-option">
+                            <input type="radio" name="payment" value="card" checked>
+                            <span class="method-icon"><i class="fas fa-credit-card"></i></span>
+                            <span>신용/체크카드</span>
+                        </label>
+                        <label class="method-option">
+                            <input type="radio" name="payment" value="kakao">
+                            <span class="method-icon"><i class="fas fa-comment"></i></span>
+                            <span>카카오페이</span>
+                        </label>
+                        <label class="method-option">
+                            <input type="radio" name="payment" value="toss">
+                            <span class="method-icon"><i class="fas fa-mobile-alt"></i></span>
+                            <span>토스</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePaymentModal()">취소</button>
+                <button class="btn-primary" onclick="processPayment()">
+                    <i class="fas fa-lock"></i> 결제하기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/credits.js') }}"></script>
+{% endblock %}
+
+
+
+

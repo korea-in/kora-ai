@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}서비스 소개 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <!-- 히어로 섹션 -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">AI-Powered Stock Analysis</div>
+            <h1 class="hero-title">
+                <span class="gradient-text">KORA AI</span>와 함께하는<br>
+                스마트 투자의 시작
+            </h1>
+            <p class="hero-description">
+                실시간 공시, 뉴스, 재무제표를 AI가 분석하여<br>
+                전문가 수준의 기업 분석 보고서를 자동으로 생성합니다.
+            </p>
+            <div class="hero-cta">
+                <a href="/main" class="btn-primary">
+                    <i class="fas fa-rocket"></i> 지금 시작하기
+                </a>
+                <a href="#features" class="btn-secondary">
+                    <i class="fas fa-info-circle"></i> 자세히 보기
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">2,500+</span>
+                    <span class="stat-label">분석 가능 기업</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">15+</span>
+                    <span class="stat-label">분석 지표</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">실시간</span>
+                    <span class="stat-label">데이터 업데이트</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-illustration">
+            <div class="floating-card card-1">
+                <i class="fas fa-chart-line"></i>
+                <span>주가 분석</span>
+            </div>
+            <div class="floating-card card-2">
+                <i class="fas fa-file-alt"></i>
+                <span>공시 분석</span>
+            </div>
+            <div class="floating-card card-3">
+                <i class="fas fa-robot"></i>
+                <span>AI 리포트</span>
+            </div>
+            <div class="floating-card card-4">
+                <i class="fas fa-newspaper"></i>
+                <span>뉴스 분석</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 주요 기능 섹션 -->
+    <section class="features-section" id="features">
+        <div class="section-header">
+            <span class="section-badge">Features</span>
+            <h2>KORA AI가 제공하는 기능</h2>
+            <p>복잡한 투자 분석을 AI가 간단하게 해결합니다</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>실시간 주가 분석</h3>
+                <p>현재가, 등락률, 52주 최고/최저, 이동평균선, RSI, MFI 등 기술적 지표를 실시간으로 분석합니다.</p>
+                <ul class="feature-list">
+                    <li>실시간 시세 조회</li>
+                    <li>기술적 지표 분석</li>
+                    <li>1년 주가 추이 차트</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3>밸류에이션 분석</h3>
+                <p>PER, PBR, EPS, BPS, 배당수익률 등 핵심 밸류에이션 지표를 한눈에 확인하세요.</p>
+                <ul class="feature-list">
+                    <li>PER/PBR 분석</li>
+                    <li>EPS/BPS 산출</li>
+                    <li>배당 정보 제공</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <h3>재무제표 분석</h3>
+                <p>DART 전자공시에서 가져온 재무제표, 재무비율, 성장성 지표를 AI가 분석합니다.</p>
+                <ul class="feature-list">
+                    <li>유동성/안정성 비율</li>
+                    <li>수익성/활동성 비율</li>
+                    <li>성장률 분석</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3>뉴스 감성 분석</h3>
+                <p>최신 뉴스를 AI가 수집하고 감성을 분석하여 시장 분위기를 파악합니다.</p>
+                <ul class="feature-list">
+                    <li>실시간 뉴스 수집</li>
+                    <li>감성 점수 산출</li>
+                    <li>핵심 이슈 요약</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI 종합 분석</h3>
+                <p>GPT-4 기반 AI가 모든 데이터를 종합 분석하여 투자 의견과 적정주가를 제시합니다.</p>
+                <ul class="feature-list">
+                    <li>적정주가 산출</li>
+                    <li>투자 점수 및 등급</li>
+                    <li>상세 평가 리포트</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-chart"></i>
+                </div>
+                <h3>투자성향 분석</h3>
+                <p>나의 투자 성향을 분석하고, 맞춤형 투자 조언을 받아보세요.</p>
+                <ul class="feature-list">
+                    <li>투자 성향 진단</li>
+                    <li>맞춤형 조언</li>
+                    <li>리포트 반영</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 데이터 소스 섹션 -->
+    <section class="partners-section">
+        <div class="section-header">
+            <span class="section-badge">Data Sources</span>
+            <h2>신뢰할 수 있는 데이터 파트너</h2>
+            <p>공인된 데이터 소스에서 실시간으로 정보를 수집합니다</p>
+        </div>
+        
+        <div class="partners-grid">
+            <div class="partner-card">
+                <div class="partner-icon dart">
+                    <i class="fas fa-building-columns"></i>
+                </div>
+                <h3>DART 전자공시</h3>
+                <p>금융감독원 전자공시시스템에서 기업 공시, 재무제표, 배당 정보를 실시간으로 수집합니다.</p>
+                <div class="partner-features">
+                    <span>기업 개황</span>
+                    <span>재무제표</span>
+                    <span>공시 정보</span>
+                </div>
+            </div>
+            
+            <div class="partner-card">
+                <div class="partner-icon naver">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3>네이버 뉴스</h3>
+                <p>네이버 검색 API를 통해 기업 관련 최신 뉴스를 수집하고 AI가 감성을 분석합니다.</p>
+                <div class="partner-features">
+                    <span>실시간 뉴스</span>
+                    <span>감성 분석</span>
+                    <span>트렌드 파악</span>
+                </div>
+            </div>
+            
+            <div class="partner-card">
+                <div class="partner-icon krx">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>한국거래소 (KRX)</h3>
+                <p>pykrx 라이브러리를 통해 실시간 주가, 거래량, 기술적 지표를 조회합니다.</p>
+                <div class="partner-features">
+                    <span>실시간 시세</span>
+                    <span>기술적 지표</span>
+                    <span>거래량 분석</span>
+                </div>
+            </div>
+            
+            <div class="partner-card">
+                <div class="partner-icon openai">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>OpenAI GPT-4</h3>
+                <p>최신 AI 기술로 수집된 데이터를 종합 분석하여 전문가 수준의 리포트를 생성합니다.</p>
+                <div class="partner-features">
+                    <span>종합 분석</span>
+                    <span>적정가 산출</span>
+                    <span>투자 의견</span>
+                </div>
+            </div>
+            
+            <div class="partner-card">
+                <div class="partner-icon firebase">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Firebase</h3>
+                <p>Google Firebase를 활용하여 사용자 인증과 분석 기록을 안전하게 관리합니다.</p>
+                <div class="partner-features">
+                    <span>사용자 인증</span>
+                    <span>데이터 저장</span>
+                    <span>실시간 동기화</span>
+                </div>
+            </div>
+            
+            <div class="partner-card">
+                <div class="partner-icon cursor">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Cursor AI</h3>
+                <p>AI 기반 개발 도구로 빠르고 안정적인 서비스 개발을 진행하고 있습니다.</p>
+                <div class="partner-features">
+                    <span>AI 개발</span>
+                    <span>코드 품질</span>
+                    <span>빠른 업데이트</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 크레딧 시스템 섹션 -->
+    <section class="pricing-section">
+        <div class="section-header">
+            <span class="section-badge">Credits</span>
+            <h2>크레딧 사용 안내</h2>
+            <p>합리적인 크레딧 시스템으로 필요한 만큼만 사용하세요</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <div class="pricing-card welcome">
+                <div class="pricing-header">
+                    <i class="fas fa-gift"></i>
+                    <h3>회원가입 혜택</h3>
+                </div>
+                <div class="pricing-amount">
+                    <span class="amount">500</span>
+                    <span class="unit">크레딧</span>
+                </div>
+                <p class="pricing-desc">회원가입 시 무료로 지급됩니다</p>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> 즉시 사용 가능</li>
+                    <li><i class="fas fa-check"></i> 유효기간 없음</li>
+                    <li><i class="fas fa-check"></i> 모든 기능 이용 가능</li>
+                </ul>
+            </div>
+            
+            <div class="pricing-card usage">
+                <div class="pricing-header">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>요약 보고서 생성</h3>
+                </div>
+                <div class="pricing-amount">
+                    <span class="amount">300</span>
+                    <span class="unit">크레딧</span>
+                </div>
+                <p class="pricing-desc">AI 분석 보고서 1건 생성</p>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> 실시간 데이터 수집</li>
+                    <li><i class="fas fa-check"></i> AI 종합 분석</li>
+                    <li><i class="fas fa-check"></i> PDF 다운로드</li>
+                </ul>
+            </div>
+            
+            <div class="pricing-card usage">
+                <div class="pricing-header">
+                    <i class="fas fa-users"></i>
+                    <h3>공개 보고서 조회</h3>
+                </div>
+                <div class="pricing-amount">
+                    <span class="amount">100</span>
+                    <span class="unit">크레딧</span>
+                </div>
+                <p class="pricing-desc">다른 사용자의 보고서 열람</p>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> 전체 내용 열람</li>
+                    <li><i class="fas fa-check"></i> PDF 다운로드</li>
+                    <li><i class="fas fa-check"></i> 참고 자료 활용</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="pricing-cta">
+            <a href="/credits" class="btn-primary">
+                <i class="fas fa-coins"></i> 크레딧 충전하기
+            </a>
+        </div>
+    </section>
+
+    <!-- CTA 섹션 -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>지금 바로 시작하세요</h2>
+            <p>AI가 분석한 전문가 수준의 기업 리포트를 경험해보세요</p>
+            <a href="/auth" class="btn-cta">
+                <i class="fas fa-user-plus"></i> 무료 회원가입
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/about.js') }}"></script>
+{% endblock %}
+
+
+
+

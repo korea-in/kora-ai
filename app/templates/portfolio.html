@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}AI 포트폴리오 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portfolio.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- 상단 네비게이션 바 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>KORA AI</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/main" class="nav-link">기업검색</a>
+                <a href="/reports" class="nav-link">보고서함</a>
+                <a href="/investment-type" class="nav-link">투자성향</a>
+                <a href="/about" class="nav-link">서비스소개</a>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="credit-badge">
+                <i class="fas fa-coins"></i>
+                <span>{{ user_credits if user_credits else 500 }}</span>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span class="user-name">{{ user_name }}</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="profile-dropdown">
+                    <a href="/profile"><i class="fas fa-user-cog"></i> 내 정보</a>
+                    <a href="/reports"><i class="fas fa-folder-open"></i> 보고서함</a>
+                    <a href="/credits"><i class="fas fa-coins"></i> 크레딧 충전</a>
+                    <a href="/investment-type"><i class="fas fa-chart-pie"></i> 투자성향분석</a>
+                    <hr>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 포트폴리오 컨테이너 -->
+    <div class="portfolio-container">
+
+    {% if not has_investment_type %}
+    <!-- 투자 성향 분석 필요 -->
+    <section class="need-analysis-section">
+        <div class="need-analysis-card">
+            <div class="icon-wrapper">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h2>먼저 투자 성향을 분석해주세요</h2>
+            <p>
+                AI가 맞춤 포트폴리오를 추천하기 위해<br>
+                투자 성향 분석이 필요합니다.
+            </p>
+            <a href="/investment-type" class="btn-primary">
+                <i class="fas fa-play"></i> 투자 성향 분석하기
+            </a>
+        </div>
+    </section>
+    {% else %}
+    <!-- 포트폴리오 메인 -->
+    <main class="portfolio-main">
+        <!-- 투자 성향 요약 -->
+        <section class="investment-summary">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="summary-content">
+                    <span class="label">나의 투자 성향</span>
+                    <span class="value" id="investmentTypeName">{{ investment_type_label }}</span>
+                </div>
+                <a href="/investment-type" class="btn-retake">
+                    <i class="fas fa-redo"></i> 다시 분석
+                </a>
+            </div>
+        </section>
+
+        <!-- 시장 선택 -->
+        <section class="market-selector">
+            <div class="market-tabs">
+                <button class="market-tab active" data-market="kospi">KOSPI</button>
+                <button class="market-tab" data-market="kosdaq">KOSDAQ</button>
+            </div>
+        </section>
+
+        <!-- 포트폴리오 구성 -->
+        <section class="portfolio-builder">
+            <h2><i class="fas fa-plus-circle"></i> 기업 추가하기</h2>
+            
+            <div class="company-search-box">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="companySearch" placeholder="기업명을 검색하세요..." autocomplete="off">
+                    <!-- 검색 결과 드롭다운 -->
+                    <div class="search-dropdown hidden" id="searchDropdown"></div>
+                </div>
+            </div>
+
+            <div class="selected-companies" id="selectedCompanies">
+                <h3>선택한 기업 <span class="count">(0/10)</span></h3>
+                <div class="companies-list" id="companiesList">
+                    <div class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <p>기업을 검색하여 추가해주세요</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 투자 금액 설정 -->
+        <section class="investment-amount-section hidden" id="amountSection">
+            <h2><i class="fas fa-won-sign"></i> 총 투자 금액 설정</h2>
+            <div class="amount-input-wrapper">
+                <input type="text" id="investmentAmount" placeholder="예: 10,000,000" value="10,000,000">
+                <span class="unit">원</span>
+            </div>
+            <p class="amount-hint">AI가 투자 성향과 선택한 기업을 분석하여 최적의 배분 비율을 제안합니다.</p>
+        </section>
+
+        <!-- 분석 버튼 -->
+        <div class="action-buttons">
+            <button class="btn-analyze" id="analyzeBtn" disabled>
+                <i class="fas fa-robot"></i> AI 포트폴리오 분석하기 (200 크레딧)
+            </button>
+        </div>
+
+        <!-- 로딩 상태 -->
+        <div class="loading-section hidden" id="loadingSection">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <p class="loading-text">AI가 포트폴리오를 분석하고 있습니다...</p>
+            <p class="loading-sub">투자 성향과 기업 데이터를 종합 분석 중</p>
+        </div>
+
+        <!-- 포트폴리오 분석 결과 -->
+        <section class="portfolio-result hidden" id="portfolioResult">
+            <h2><i class="fas fa-chart-pie"></i> AI 포트폴리오 분석 결과</h2>
+            
+            <div class="result-grid">
+                <!-- 추천 자산 배분 -->
+                <div class="result-card allocation">
+                    <h3><i class="fas fa-chart-pie"></i> 추천 자산 배분</h3>
+                    <div class="allocation-content">
+                        <canvas id="allocationChart" width="250" height="250"></canvas>
+                        <div class="allocation-legend" id="allocationLegend"></div>
+                    </div>
+                </div>
+                
+                <!-- 포트폴리오 리스크 -->
+                <div class="result-card risk">
+                    <h3><i class="fas fa-exclamation-triangle"></i> 포트폴리오 리스크</h3>
+                    <div class="risk-content">
+                        <div class="risk-meter">
+                            <div class="risk-bar">
+                                <div class="risk-fill" id="riskFill"></div>
+                            </div>
+                            <div class="risk-labels">
+                                <span>낮음</span>
+                                <span>중간</span>
+                                <span>높음</span>
+                            </div>
+                        </div>
+                        <div class="risk-score">
+                            <span class="score-value" id="riskScore">-</span>
+                            <span class="score-label" id="riskLabel">분석 필요</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 예상 수익률 -->
+                <div class="result-card returns">
+                    <h3><i class="fas fa-chart-line"></i> 예상 연간 수익률</h3>
+                    <div class="returns-content">
+                        <div class="return-range">
+                            <span class="return-min" id="returnMin">-</span>
+                            <span class="return-separator">~</span>
+                            <span class="return-max" id="returnMax">-</span>
+                        </div>
+                        <p class="return-note">* 과거 데이터 기반 예측이며, 실제 수익률과 다를 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI 조언 -->
+            <div class="ai-advice-card">
+                <h3><i class="fas fa-lightbulb"></i> AI 투자 조언</h3>
+                <div class="advice-content" id="aiAdvice">
+                    분석 결과가 여기에 표시됩니다.
+                </div>
+            </div>
+
+            <!-- 개별 기업 배분 상세 -->
+            <div class="allocation-details-card">
+                <h3><i class="fas fa-list"></i> 기업별 투자 배분</h3>
+                <div class="allocation-table" id="allocationTable">
+                    <!-- 테이블이 여기에 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 다시 분석 버튼 -->
+            <div class="result-actions">
+                <button class="btn-retry" onclick="resetAnalysis()">
+                    <i class="fas fa-redo"></i> 기업 수정하기
+                </button>
+                <button class="btn-save" onclick="savePortfolio()">
+                    <i class="fas fa-save"></i> 포트폴리오 저장
+                </button>
+            </div>
+        </section>
+    </main>
+    {% endif %}
+    </div>
+</div>
+
+<!-- 투자 성향 데이터 전달 -->
+<script>
+    const USER_INVESTMENT_TYPE = "{{ investment_type }}";
+    const USER_INVESTMENT_SCORE = {{ investment_score or 30 }};
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
+<script>
+    // 프로필 드롭다운 토글
+    document.querySelector('.user-profile')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        this.classList.toggle('active');
+    });
+    document.addEventListener('click', function() {
+        document.querySelector('.user-profile')?.classList.remove('active');
+    });
+</script>
+{% endblock %}
+
+

@@ -23,7 +23,14 @@ from app.services.firebase.firestore_service import (
     save_analysis_history,
     get_user_analysis_history,
     increment_company_view,
-    get_popular_companies
+    get_popular_companies,
+    get_report_based_popular,
+    save_report,
+    get_user_reports,
+    get_public_reports,
+    get_report_by_id,
+    use_user_credits,
+    get_user_credits
 )
 
 __all__ = [
@@ -50,5 +57,13 @@ __all__ = [
     'get_user_analysis_history',
     'increment_company_view',
     'get_popular_companies',
+    'get_report_based_popular',
+    # Reports
+    'save_report',
+    'get_user_reports',
+    'get_public_reports',
+    'get_report_by_id',
+    'use_user_credits',
+    'get_user_credits',
 ]
 

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}내 정보 - KORA AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- 헤더 -->
+    <header class="profile-header">
+        <div class="header-left">
+            <a href="/main" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <h1><i class="fas fa-user-cog"></i> 내 정보</h1>
+                <p>개인정보를 확인하고 수정하세요</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="profile-content">
+        <!-- 프로필 카드 -->
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <div class="avatar-circle">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="avatar-edit-btn">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <div class="profile-summary">
+                <h2 id="displayName">{{ user_name if user_name else '사용자' }}</h2>
+                <p id="userEmail">{{ user_email if user_email else 'user@example.com' }}</p>
+                <div class="profile-badges">
+                    <span class="badge tier">{{ subscription_tier if subscription_tier else 'Free' }}</span>
+                    <span class="badge investment" id="investmentBadge">
+                        {{ investment_type if investment_type else '미분석' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 정보 수정 폼 -->
+        <form class="profile-form" id="profileForm">
+            <section class="form-section">
+                <h3><i class="fas fa-user"></i> 기본 정보</h3>
+                
+                <div class="form-group">
+                    <label>이메일 <span class="readonly-badge">수정 불가</span></label>
+                    <input type="email" value="{{ user_email if user_email else 'user@example.com' }}" disabled class="readonly">
+                </div>
+                
+                <div class="form-group">
+                    <label for="displayName">이름 (닉네임)</label>
+                    <input type="text" id="editName" name="display_name" value="{{ user_name if user_name else '' }}" placeholder="표시될 이름을 입력하세요">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">전화번호</label>
+                    <input type="tel" id="phoneNumber" name="phone_number" value="{{ phone_number if phone_number else '' }}" placeholder="010-0000-0000">
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h3><i class="fas fa-cog"></i> 설정</h3>
+                
+                <div class="form-group">
+                    <label for="preferredMarket">선호 시장</label>
+                    <select id="preferredMarket" name="preferred_market">
+                        <option value="kospi" {{ 'selected' if preferred_market == 'kospi' else '' }}>KOSPI</option>
+                        <option value="kosdaq" {{ 'selected' if preferred_market == 'kosdaq' else '' }}>KOSDAQ</option>
+                    </select>
+                </div>
+                
+                <div class="form-group toggle-group">
+                    <label>
+                        <span>이메일 알림 수신</span>
+                        <p class="form-hint">분석 완료, 이벤트 등 알림을 이메일로 받습니다</p>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_notifications" {{ 'checked' if email_notifications else '' }}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> 변경사항 저장
+                </button>
+            </div>
+        </form>
+
+        <!-- 비밀번호 변경 -->
+        <section class="form-section">
+            <h3><i class="fas fa-lock"></i> 비밀번호 변경</h3>
+            
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="currentPassword">현재 비밀번호</label>
+                    <input type="password" id="currentPassword" name="current_password" placeholder="현재 비밀번호 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label for="newPassword">새 비밀번호</label>
+                    <input type="password" id="newPassword" name="new_password" placeholder="새 비밀번호 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">새 비밀번호 확인</label>
+                    <input type="password" id="confirmPassword" name="confirm_password" placeholder="새 비밀번호 다시 입력">
+                </div>
+                
+                <button type="submit" class="btn-secondary">
+                    <i class="fas fa-key"></i> 비밀번호 변경
+                </button>
+            </form>
+        </section>
+
+        <!-- 계정 통계 -->
+        <section class="stats-section">
+            <h3><i class="fas fa-chart-bar"></i> 이용 현황</h3>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statCredits">{{ user_credits if user_credits else 500 }}</span>
+                        <span class="stat-label">보유 크레딧</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statAnalysis">{{ analysis_count if analysis_count else 0 }}</span>
+                        <span class="stat-label">분석 보고서</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statDays">{{ member_days if member_days else 1 }}</span>
+                        <span class="stat-label">가입일수</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 회원 탈퇴 -->
+        <section class="danger-section">
+            <h3><i class="fas fa-exclamation-triangle"></i> 위험 영역</h3>
+            
+            <div class="danger-card">
+                <div class="danger-info">
+                    <h4>회원 탈퇴</h4>
+                    <p>계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
+                </div>
+                <button class="btn-danger" onclick="confirmWithdrawal()">
+                    <i class="fas fa-user-minus"></i> 회원 탈퇴
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- 탈퇴 확인 모달 -->
+    <div class="modal-overlay hidden" id="withdrawalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>회원 탈퇴</h2>
+                <button class="modal-close" onclick="closeWithdrawalModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>정말로 탈퇴하시겠습니까?</p>
+                </div>
+                <ul class="warning-list">
+                    <li>모든 분석 보고서가 삭제됩니다</li>
+                    <li>보유 크레딧이 소멸됩니다</li>
+                    <li>계정 복구가 불가능합니다</li>
+                </ul>
+                <div class="form-group">
+                    <label>탈퇴 확인을 위해 "탈퇴합니다"를 입력하세요</label>
+                    <input type="text" id="withdrawalConfirm" placeholder="탈퇴합니다">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeWithdrawalModal()">취소</button>
+                <button class="btn-danger" onclick="processWithdrawal()">
+                    <i class="fas fa-user-minus"></i> 탈퇴하기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}
+
+
+
+

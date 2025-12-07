@@ -47,15 +47,20 @@ document.addEventListener('DOMContentLoaded', async function() {
 function initNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.section[id]');
+    const headerHeight = 90; // 헤더 높이 + 여유 공간
     
-    // 클릭 시 스크롤
+    // 클릭 시 스크롤 (오프셋 적용)
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href').substring(1);
             const targetSection = document.getElementById(targetId);
             if (targetSection) {
-                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const targetPosition = targetSection.offsetTop - headerHeight;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
             }
         });
     });
@@ -63,7 +68,7 @@ function initNavigation() {
     // 스크롤 시 활성 네비게이션 업데이트
     window.addEventListener('scroll', () => {
         let current = '';
-        const scrollPos = window.scrollY + 150;
+        const scrollPos = window.scrollY + headerHeight + 50;
         
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -81,6 +86,32 @@ function initNavigation() {
             }
         });
     });
+}
+
+// 네비게이션 토글
+function toggleNav() {
+    const nav = document.getElementById('reportNav');
+    const main = document.querySelector('.report-main');
+    
+    nav.classList.toggle('collapsed');
+    main.classList.toggle('nav-collapsed');
+}
+
+// 채팅창 토글
+function toggleChat() {
+    const chat = document.getElementById('chatSidebar');
+    const main = document.querySelector('.report-main');
+    const toggleBtn = document.getElementById('chatToggleBtn');
+    
+    chat.classList.toggle('collapsed');
+    main.classList.toggle('chat-collapsed');
+    
+    // 아이콘 방향 변경
+    if (chat.classList.contains('collapsed')) {
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    }
 }
 
 // 재무제표 탭 초기화
@@ -157,16 +188,18 @@ async function loadReport() {
         updateLoadingStep('차트 생성', 90);
         await createPriceChart();
         
+        // 5단계: 요청사항 답변 (있는 경우)
+        if (COMPANY_DATA.requestText && COMPANY_DATA.requestText.trim()) {
+            await loadRequestAnswer();
+        }
+        
+        // 6단계: 보고서 저장 및 크레딧 차감
+        await saveReportAndDeductCredits();
+        
         // 완료
         updateLoadingStep('완료!', 100);
         await sleep(500);
         showLoading(false);
-        
-        // 생성 시간 표시
-        const generatedTimeEl = document.getElementById('generatedTime');
-        if (generatedTimeEl) {
-            generatedTimeEl.textContent = `생성: ${new Date().toLocaleString('ko-KR')}`;
-        }
         
         // PDF 다운로드 버튼 활성화
         enablePdfDownload();
@@ -178,6 +211,93 @@ async function loadReport() {
     }
 }
 
+// 보고서 저장 및 크레딧 차감
+async function saveReportAndDeductCredits() {
+    try {
+        console.log('[saveReport] Starting save...');
+        console.log('[saveReport] COMPANY_DATA:', COMPANY_DATA);
+        console.log('[saveReport] aiAnalysis:', aiAnalysis ? 'exists' : 'null');
+        
+        const response = await fetch('/api/report/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                company_name: COMPANY_DATA.name,
+                ticker: COMPANY_DATA.ticker,
+                market: COMPANY_DATA.market,
+                analysis: aiAnalysis,
+                raw_data: reportData
+            })
+        });
+        
+        const result = await response.json();
+        console.log('[saveReport] Response:', result);
+        
+        if (result.success) {
+            console.log('[saveReport] Report saved successfully:', result.report_id);
+            console.log('[saveReport] Credits remaining:', result.credits_remaining);
+            
+            // 크레딧 배지 업데이트 (헤더에 있는 경우)
+            const creditBadge = document.querySelector('.credit-badge span');
+            if (creditBadge) {
+                creditBadge.textContent = result.credits_remaining;
+            }
+        } else {
+            console.warn('[saveReport] Warning:', result.error);
+            // 크레딧 부족 등의 오류는 사용자에게 알림하지 않음 (보고서는 이미 표시됨)
+        }
+    } catch (error) {
+        console.error('[saveReport] Error:', error);
+        // 저장 실패해도 보고서는 계속 표시
+    }
+}
+
+// 요청사항 답변 로드
+async function loadRequestAnswer() {
+    const requestSection = document.getElementById('section-request');
+    const requestQuestion = document.getElementById('requestQuestion');
+    const answerLoading = document.getElementById('answerLoading');
+    const answerContent = document.getElementById('answerContent');
+    
+    if (!requestSection || !requestQuestion) return;
+    
+    // 섹션 표시
+    requestSection.classList.remove('hidden');
+    requestQuestion.textContent = COMPANY_DATA.requestText;
+    if (answerLoading) answerLoading.classList.remove('hidden');
+    if (answerContent) answerContent.textContent = '';
+    
+    try {
+        const response = await fetch('/api/report/request-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                company_name: COMPANY_DATA.name,
+                request_text: COMPANY_DATA.requestText,
+                report_context: JSON.stringify({
+                    krx: reportData?.krx,
+                    dart: reportData?.dart,
+                    analysis: aiAnalysis
+                })
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (answerLoading) answerLoading.classList.add('hidden');
+        
+        if (result.success && result.answer) {
+            if (answerContent) answerContent.textContent = result.answer;
+        } else {
+            if (answerContent) answerContent.textContent = '답변을 생성하지 못했습니다. 다시 시도해주세요.';
+        }
+    } catch (error) {
+        console.error('Request answer error:', error);
+        if (answerLoading) answerLoading.classList.add('hidden');
+        if (answerContent) answerContent.textContent = '답변 생성 중 오류가 발생했습니다.';
+    }
+}
+
 // ============================================
 // 기본 데이터 표시
 // ============================================
@@ -186,6 +306,10 @@ function displayBasicData(data) {
     const krx = data.krx || {};
     const dart = data.dart || {};
     const news = data.news || {};
+    
+    // 디버깅용 로그
+    console.log('📊 밸류에이션 데이터:', krx.valuation);
+    console.log('💰 배당 데이터:', dart.dividend);
     
     // 헬퍼 함수 - 안전하게 텍스트 설정
     const setTextSafe = (id, text) => {
@@ -212,11 +336,79 @@ function displayBasicData(data) {
     
     // 밸류에이션
     const val = krx.valuation || {};
+    const dividend = dart.dividend || [];
+    
+    // 디버깅: 밸류에이션 데이터 구조 확인
+    console.log('📊 밸류에이션 데이터:', val);
+    console.log('📊 BPS 값:', val.bps, '| PBR 값:', val.pbr);
+    console.log('📊 시가총액:', krx.summary?.market_cap, '| 현재가:', krx.current_price?.close);
+    
+    // DART 주식수 정보
+    const stockInfo = dart.stock_info || {};
+    console.log('📊 DART 주식수 정보:', stockInfo);
+    if (stockInfo.total_shares) {
+        console.log('📊 DART 발행주식총수:', stockInfo.total_shares.toLocaleString());
+    }
+    
+    // 자본총계 확인
+    const keyAccounts = dart.financials?.key_accounts || {};
+    let totalEquity = null;
+    for (const [key, value] of Object.entries(keyAccounts)) {
+        if (key.includes('자본총계') || key.includes('자산총계') || key.includes('부채총계')) {
+            console.log(`📊 ${key}:`, value);
+            if (key.includes('자본총계')) {
+                totalEquity = value?.current || value;
+            }
+        }
+    }
+    
+    // 디버깅: 배당 데이터 구조 확인
+    if (dividend.length > 0) {
+        console.log('📋 배당 데이터 상세:', dividend.map(d => ({ se: d.se, thstrm: d.thstrm })));
+    }
+    
+    // BPS 계산 실패 원인 분석
+    if (!val.bps) {
+        const marketCap = krx.summary?.market_cap;
+        const currentPrice = krx.current_price?.close;
+        const dartShares = stockInfo.total_shares;
+        
+        let reason = [];
+        if (!totalEquity) reason.push('자본총계 없음');
+        if (!marketCap && !dartShares) reason.push('주식수 계산 불가 (시가총액/DART 모두 없음)');
+        if (marketCap && !currentPrice) reason.push('현재가 없음');
+        
+        console.warn('⚠️ BPS를 구하지 못함. 원인:', reason.join(', ') || '알 수 없음');
+        console.warn('⚠️ 디버깅 정보: 자본총계=', totalEquity, ', 시가총액=', marketCap, ', 현재가=', currentPrice, ', DART주식수=', dartShares);
+    }
+    
     setTextSafe('perValue', val.per ? `${val.per}배` : '-');
     setTextSafe('pbrValue', val.pbr ? `${val.pbr}배` : '-');
     setTextSafe('epsValue', val.eps ? formatPrice(val.eps) : '-');
     setTextSafe('bpsValue', val.bps ? formatPrice(val.bps) : '-');
-    setTextSafe('divYield', val.div_yield ? `${val.div_yield}%` : '-');
+    
+    // 배당수익률 - DART 데이터 우선, 없으면 KRX 데이터
+    let divYield = val.div_yield;
+    let dpsValue = val.dps;
+    
+    if (dividend.length > 0) {
+        // 현금배당수익률(%) 찾기 - 정확히 매칭
+        const divYieldItem = dividend.find(d => d.se && d.se === '현금배당수익률(%)');
+        if (divYieldItem && divYieldItem.thstrm && divYieldItem.thstrm !== '-') {
+            const parsed = parseFloat(divYieldItem.thstrm.replace(/[^0-9.]/g, ''));
+            if (!isNaN(parsed)) divYield = parsed;
+        }
+        
+        // 주당 현금배당금(원) 찾기 - 정확히 매칭 (총액이 아닌 주당 배당금)
+        const dpsItem = dividend.find(d => d.se && d.se === '주당 현금배당금(원)');
+        if (dpsItem && dpsItem.thstrm && dpsItem.thstrm !== '-') {
+            const parsed = parseInt(dpsItem.thstrm.replace(/[^0-9]/g, ''));
+            if (!isNaN(parsed) && parsed > 0) dpsValue = parsed;
+        }
+    }
+    
+    setTextSafe('divYield', divYield ? `${divYield}%` : '-');
+    setTextSafe('dpsValue', dpsValue ? formatPrice(dpsValue) : '-');
     
     // 52주 범위
     const yearly = krx.yearly_trend || {};
@@ -271,7 +463,7 @@ function displayBasicData(data) {
         tableBody.innerHTML = `
             <tr><td>회사명</td><td>${companyInfo.corp_name || COMPANY_DATA.name}</td></tr>
             <tr><td>대표자</td><td>${companyInfo.ceo_nm || '-'}</td></tr>
-            <tr><td>업종</td><td>${companyInfo.induty_code || '-'}</td></tr>
+            <tr><td>업종</td><td>${companyInfo.induty_name || companyInfo.induty_code || '-'}</td></tr>
             <tr><td>설립일</td><td>${formatDate(companyInfo.est_dt) || '-'}</td></tr>
             <tr><td>상장일</td><td>${formatDate(companyInfo.stock_lst_dt) || '-'}</td></tr>
             <tr><td>결산월</td><td>${companyInfo.acc_mt || '-'}월</td></tr>
@@ -285,97 +477,166 @@ function displayBasicData(data) {
     // 공시 목록
     displayDisclosures(dart.disclosures || []);
     
-    // 재무비율 분석
-    displayFinancialRatios(dart.financial_index || {});
+    // 재무비율 분석 (calculated_ratios도 함께 전달)
+    displayFinancialRatios(dart.financial_index || {}, dart.calculated_ratios || {});
 }
 
-// 재무비율 표시
-function displayFinancialRatios(index) {
-    if (!index) {
-        console.log('Financial index data is empty');
-        return;
-    }
+// 재무비율 표시 - DART 데이터 기반 동적 생성
+function displayFinancialRatios(index, calculatedRatios) {
+    console.log('📊 Financial Index:', index);
+    console.log('📊 Calculated Ratios:', calculatedRatios);
     
-    // DART API 응답 구조: { "수익성지표": [...], "안정성지표": [...], ... }
-    // 각 항목: { idx_nm: "지표명", idx_val: "값" }
+    const container = document.getElementById('ratiosContainer');
+    const titleEl = document.getElementById('ratiosSectionTitle');
     
-    // 지표 매핑 함수
-    const findRatioValue = (category, searchTerms) => {
-        const items = index[category] || [];
-        for (const term of searchTerms) {
-            const found = items.find(item => item.idx_nm && item.idx_nm.includes(term));
-            if (found && found.idx_val) {
-                const val = parseFloat(found.idx_val.replace(/,/g, ''));
-                if (!isNaN(val)) return val;
-            }
-        }
-        return null;
+    if (!container) return;
+    
+    // 지표별 메타 정보 (정상 범위, 공식, 설명)
+    const ratioMeta = {
+        // 수익성 지표
+        'ROE': { range: '10% 이상 양호', formula: '당기순이익 ÷ 자기자본 × 100', unit: '%', higherBetter: true },
+        'ROA': { range: '5% 이상 양호', formula: '당기순이익 ÷ 총자산 × 100', unit: '%', higherBetter: true },
+        '총자산영업이익률': { range: '5% 이상 양호', formula: '영업이익 ÷ 총자산 × 100', unit: '%', higherBetter: true },
+        '순이익률': { range: '업종 평균 비교', formula: '당기순이익 ÷ 매출액 × 100', unit: '%', higherBetter: true },
+        '총포괄이익률': { range: '업종 평균 비교', formula: '총포괄이익 ÷ 매출액 × 100', unit: '%', higherBetter: true },
+        '매출총이익률': { range: '업종 평균 비교', formula: '매출총이익 ÷ 매출액 × 100', unit: '%', higherBetter: true },
+        '영업이익률': { range: '10% 이상 양호', formula: '영업이익 ÷ 매출액 × 100', unit: '%', higherBetter: true },
+        '자기자본영업이익률': { range: '높을수록 양호', formula: '영업이익 ÷ 자기자본 × 100', unit: '%', higherBetter: true },
+        '납입자본이익률': { range: '높을수록 양호', formula: '당기순이익 ÷ 납입자본 × 100', unit: '%', higherBetter: true },
+        
+        // 안정성 지표
+        '부채비율': { range: '100% 이하 양호', formula: '부채총계 ÷ 자기자본 × 100', unit: '%', higherBetter: false },
+        '자기자본비율': { range: '50% 이상 양호', formula: '자기자본 ÷ 총자산 × 100', unit: '%', higherBetter: true },
+        '유동비율': { range: '150~200% 양호', formula: '유동자산 ÷ 유동부채 × 100', unit: '%', higherBetter: true },
+        '당좌비율': { range: '100% 이상 양호', formula: '(유동자산-재고) ÷ 유동부채 × 100', unit: '%', higherBetter: true },
+        '이자보상배율': { range: '3배 이상 양호', formula: '영업이익 ÷ 이자비용', unit: '배', higherBetter: true },
+        '재무레버리지': { range: '낮을수록 안정', formula: '총자산 ÷ 자기자본', unit: '%', higherBetter: false },
+        '자본유보율': { range: '높을수록 양호', formula: '잉여금 ÷ 납입자본 × 100', unit: '%', higherBetter: true },
+        '비유동비율': { range: '100% 이하 양호', formula: '비유동자산 ÷ 자기자본 × 100', unit: '%', higherBetter: false },
+        
+        // 성장성 지표
+        '매출액증가율(YoY)': { range: '양수 양호', formula: '(금년매출-전년매출) ÷ 전년매출 × 100', unit: '%', higherBetter: true },
+        '영업이익증가율(YoY)': { range: '양수 양호', formula: '(금년영업이익-전년) ÷ 전년 × 100', unit: '%', higherBetter: true },
+        '순이익증가율(YoY)': { range: '양수 양호', formula: '(금년순이익-전년) ÷ 전년 × 100', unit: '%', higherBetter: true },
+        '총자산증가율': { range: '양수 양호', formula: '(금년총자산-전년) ÷ 전년 × 100', unit: '%', higherBetter: true },
+        '자기자본증가율': { range: '양수 양호', formula: '(금년자본-전년) ÷ 전년 × 100', unit: '%', higherBetter: true },
+        '총포괄이익증가율(YoY)': { range: '양수 양호', formula: '(금년-전년) ÷ 전년 × 100', unit: '%', higherBetter: true },
+        '부채총계증가율': { range: '낮을수록 안정', formula: '(금년부채-전년) ÷ 전년 × 100', unit: '%', higherBetter: false },
+        
+        // 활동성 지표
+        '총자산회전율': { range: '1회 이상 양호', formula: '매출액 ÷ 총자산', unit: '회', higherBetter: true },
+        '재고자산회전율': { range: '높을수록 양호', formula: '매출원가 ÷ 평균재고', unit: '회', higherBetter: true },
+        '매출채권회전율': { range: '높을수록 양호', formula: '매출액 ÷ 평균매출채권', unit: '회', higherBetter: true },
+        '자기자본회전율': { range: '높을수록 양호', formula: '매출액 ÷ 자기자본', unit: '회', higherBetter: true },
+        '배당성향(%)': { range: '20~40% 적정', formula: '배당금 ÷ 당기순이익 × 100', unit: '%', higherBetter: null }
     };
     
-    // 유동성 지표 (안정성지표 카테고리에 포함됨)
-    setRatioValue('currentRatio', findRatioValue('안정성지표', ['유동비율']), 150, 200, '%', true);
-    setRatioValue('quickRatio', findRatioValue('안정성지표', ['당좌비율']), 100, 150, '%', true);
+    // 카테고리 순서 및 설명
+    const categories = [
+        { key: '수익성지표', title: '수익성 지표', desc: '이익 창출 능력', icon: 'fas fa-chart-line' },
+        { key: '안정성지표', title: '안정성 지표', desc: '재무구조 안정성', icon: 'fas fa-shield-alt' },
+        { key: '성장성지표', title: '성장성 지표', desc: '기업 성장 추이', icon: 'fas fa-seedling' },
+        { key: '활동성지표', title: '활동성 지표', desc: '자산 활용 효율성', icon: 'fas fa-sync-alt' }
+    ];
     
-    // 안정성 지표
-    setRatioValue('debtRatio', findRatioValue('안정성지표', ['부채비율']), 100, 200, '%', false);
-    setRatioValue('equityRatio', findRatioValue('안정성지표', ['자기자본비율']), 50, 70, '%', true);
-    setRatioValue('interestCoverage', findRatioValue('안정성지표', ['이자보상배율', '이자보상']), 3, 5, '배', true);
-    
-    // 수익성 지표
-    setRatioValue('roe', findRatioValue('수익성지표', ['자기자본순이익률', 'ROE']), 10, 15, '%', true);
-    setRatioValue('roa', findRatioValue('수익성지표', ['총자산순이익률', 'ROA']), 5, 10, '%', true);
-    setRatioValue('npm', findRatioValue('수익성지표', ['매출액순이익률', '순이익률']), 5, 10, '%', true);
-    setRatioValue('opm', findRatioValue('수익성지표', ['매출액영업이익률', '영업이익률']), 10, 15, '%', true);
-    
-    // 활동성 지표
-    setRatioValue('assetTurnover', findRatioValue('활동성지표', ['총자산회전율', '총자본회전율']), 0.5, 1, '회', true);
-    setRatioValue('inventoryTurnover', findRatioValue('활동성지표', ['재고자산회전율']), 5, 10, '회', true);
-    setRatioValue('receivableTurnover', findRatioValue('활동성지표', ['매출채권회전율']), 5, 10, '회', true);
-}
-
-function setRatioValue(id, value, safeMin, goodMin, unit, higherIsBetter) {
-    const valueEl = document.getElementById(id);
-    const statusEl = document.getElementById(id + 'Status');
-    const cardEl = document.getElementById(id + 'Card');
-    
-    if (!valueEl) return;
-    
-    if (value === undefined || value === null || isNaN(value)) {
-        valueEl.textContent = '-';
-        if (statusEl) statusEl.textContent = '데이터 없음';
-        return;
-    }
-    
-    const numValue = parseFloat(value);
-    valueEl.textContent = numValue.toFixed(2) + unit;
-    
-    let status, statusClass;
-    if (higherIsBetter) {
-        if (numValue >= goodMin) {
-            status = '양호'; statusClass = 'safe';
-        } else if (numValue >= safeMin) {
-            status = '보통'; statusClass = 'warning';
-        } else {
-            status = '주의'; statusClass = 'danger';
-        }
-    } else {
-        // 부채비율 등 낮을수록 좋은 지표
-        if (numValue <= safeMin) {
-            status = '양호'; statusClass = 'safe';
-        } else if (numValue <= goodMin) {
-            status = '보통'; statusClass = 'warning';
-        } else {
-            status = '주의'; statusClass = 'danger';
+    // 기준일 추출
+    let baseDate = '';
+    for (const cat of categories) {
+        const items = index[cat.key] || [];
+        if (items.length > 0 && items[0].stlm_dt) {
+            baseDate = items[0].stlm_dt;
+            break;
         }
     }
     
-    if (statusEl) {
-        statusEl.textContent = status;
-        statusEl.className = `ratio-status ${statusClass}`;
+    // 제목에 기준일 추가
+    if (titleEl && baseDate) {
+        titleEl.innerHTML = `<i class="fas fa-balance-scale"></i> 재무비율 분석 <span class="ratio-date">(${baseDate} 기준)</span>`;
     }
-    if (cardEl) {
-        cardEl.className = `ratio-card ${statusClass}`;
+    
+    let html = '';
+    let hasAnyData = false;
+    
+    for (const cat of categories) {
+        const items = index[cat.key] || [];
+        
+        // idx_val이 유효한 숫자인 항목만 필터링
+        const filteredItems = items.filter(item => {
+            if (!item.idx_val || item.idx_val === '-' || item.idx_val === '') return false;
+            // #####, NaN, 비정상 문자열 필터링
+            const val = String(item.idx_val).trim();
+            if (val.includes('#') || val.includes('N/A') || val.includes('nan')) return false;
+            // 숫자로 변환 가능한지 확인
+            const num = parseFloat(val.replace(/,/g, ''));
+            return !isNaN(num) && isFinite(num);
+        });
+        
+        // 같은 지표명(idx_nm)이 여러 개인 경우 가장 최근(첫 번째) 항목만 유지
+        const seenNames = new Set();
+        const validItems = filteredItems.filter(item => {
+            const name = item.idx_nm || '';
+            if (seenNames.has(name)) return false;
+            seenNames.add(name);
+            return true;
+        });
+        
+        if (validItems.length === 0) continue;
+        hasAnyData = true;
+        
+        html += `
+            <div class="ratio-category">
+                <h3 class="ratio-category-title"><i class="${cat.icon}"></i> ${cat.title} <span class="cat-desc">(${cat.desc})</span></h3>
+                <div class="ratio-grid">
+        `;
+        
+        for (const item of validItems) {
+            const name = item.idx_nm || '';
+            const value = parseFloat(String(item.idx_val).replace(/,/g, ''));
+            const meta = ratioMeta[name] || { range: '-', formula: '-', unit: '%', higherBetter: null };
+            
+            // 상태 계산
+            let statusClass = 'neutral';
+            let statusText = '-';
+            
+            if (meta.higherBetter !== null && !isNaN(value)) {
+                if (meta.higherBetter) {
+                    statusClass = value > 0 ? 'safe' : 'danger';
+                    statusText = value > 0 ? '양호' : '주의';
+                } else {
+                    // 부채비율 등 특수 케이스
+                    if (name.includes('부채비율')) {
+                        statusClass = value <= 100 ? 'safe' : value <= 200 ? 'warning' : 'danger';
+                        statusText = value <= 100 ? '양호' : value <= 200 ? '보통' : '주의';
+                    } else {
+                        statusClass = value < 50 ? 'safe' : 'warning';
+                        statusText = value < 50 ? '양호' : '보통';
+                    }
+                }
+            }
+            
+            html += `
+                <div class="ratio-card ${statusClass}">
+                    <div class="ratio-header">
+                        <span class="ratio-name">${name}</span>
+                        <span class="ratio-tooltip">
+                            <i class="fas fa-question-circle"></i>
+                            <span class="tooltip-text">적정: ${meta.range}<br>공식: ${meta.formula}</span>
+                        </span>
+                    </div>
+                    <div class="ratio-value">${value.toFixed(2)}${meta.unit}</div>
+                    <div class="ratio-status ${statusClass}">${statusText}</div>
+                </div>
+            `;
+        }
+        
+        html += '</div></div>';
     }
+    
+    if (!hasAnyData) {
+        html = '<div class="ratio-no-data"><i class="fas fa-info-circle"></i> 재무비율 데이터가 없습니다.</div>';
+    }
+    
+    container.innerHTML = html;
 }
 
 // 재무제표 표시
@@ -516,13 +777,11 @@ function displayDisclosures(disclosures) {
         </div>
     `).join('');
     
-    // DART 링크 설정
-    if (disclosures.length > 0) {
-        const firstReport = disclosures.find(d => d.report_nm && d.report_nm.includes('보고서'));
-        if (firstReport) {
-            document.getElementById('dartLink').href = 
-                `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${firstReport.rcept_no}`;
-        }
+    // DART 링크 설정 - 해당 기업의 정기보고서 목록 페이지로 이동
+    const dartLinkEl = document.getElementById('dartLink');
+    if (dartLinkEl && COMPANY_DATA.corpCode) {
+        // DART 정기보고서 검색 페이지에서 해당 기업 조회
+        dartLinkEl.href = `https://dart.fss.or.kr/dsab002/main.do?crp_cd=${COMPANY_DATA.corpCode}`;
     }
 }
 
@@ -555,19 +814,45 @@ function displayAIAnalysis(analysis) {
     
     // 투자 점수
     const score = analysis.investment_score || 0;
+    const grade = analysis.investment_grade || '';
+    
     const scoreValueEl = document.getElementById('scoreValue');
     if (scoreValueEl) scoreValueEl.textContent = score;
     
-    // 원형 프로그레스
+    // 원형 프로그레스 (시계방향 애니메이션)
     const circle = document.getElementById('scoreCircle');
     if (circle) {
-        const circumference = 2 * Math.PI * 45;
-        circle.style.strokeDashoffset = circumference - (score / 100) * circumference;
+        const circumference = 2 * Math.PI * 45; // 약 283
+        
+        // 점수에 따른 색상 설정
+        let strokeColor;
+        if (score >= 80) {
+            strokeColor = '#10b981'; // 녹색 (매우 양호)
+        } else if (score >= 60) {
+            strokeColor = '#3b82f6'; // 파란색 (양호)
+        } else if (score >= 40) {
+            strokeColor = '#f59e0b'; // 주황색 (보통)
+        } else {
+            strokeColor = '#ef4444'; // 빨간색 (주의)
+        }
+        circle.style.stroke = strokeColor;
+        
+        // 초기값 설정 (0에서 시작)
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = circumference;
+        
+        // 약간의 딜레이 후 애니메이션 시작
+        setTimeout(() => {
+            circle.style.transition = 'stroke-dashoffset 1.5s ease-out, stroke 0.5s ease';
+            circle.style.strokeDashoffset = circumference - (score / 100) * circumference;
+        }, 100);
     }
     
-    // 등급
-    const gradeEl = document.getElementById('investmentGrade');
-    if (gradeEl) gradeEl.textContent = analysis.investment_grade || '-';
+    // 제목에 등급 표시
+    const scoreLabelEl = document.getElementById('scoreLabel');
+    if (scoreLabelEl) {
+        scoreLabelEl.textContent = grade ? `투자 점수(${grade})` : '투자 점수';
+    }
     
     // 투자 의견
     const opinionBadge = document.getElementById('investmentOpinion');
@@ -591,8 +876,25 @@ function displayAIAnalysis(analysis) {
     const newsAnalysis = analysis.news_analysis || {};
     const newsScoreEl = document.getElementById('newsScore');
     const newsSentimentEl = document.getElementById('newsSentiment');
+    const newsSummaryTextEl = document.getElementById('newsSummaryText');
+    
     if (newsScoreEl) newsScoreEl.textContent = newsAnalysis.overall_score || '-';
-    if (newsSentimentEl) newsSentimentEl.textContent = newsAnalysis.overall_sentiment || '-';
+    if (newsSentimentEl) {
+        const sentiment = newsAnalysis.overall_sentiment || '-';
+        newsSentimentEl.textContent = sentiment;
+        // 감성에 따라 클래스 추가
+        newsSentimentEl.classList.remove('positive', 'negative', 'neutral');
+        if (sentiment.includes('긍정')) {
+            newsSentimentEl.classList.add('positive');
+        } else if (sentiment.includes('부정')) {
+            newsSentimentEl.classList.add('negative');
+        } else {
+            newsSentimentEl.classList.add('neutral');
+        }
+    }
+    if (newsSummaryTextEl && newsAnalysis.summary) {
+        newsSummaryTextEl.textContent = newsAnalysis.summary;
+    }
     
     // 뉴스 감성 업데이트
     if (newsAnalysis.top_news) {
@@ -631,6 +933,63 @@ function displayAIAnalysis(analysis) {
         const disclaimerEl = document.getElementById('forecastDisclaimer');
         if (disclaimerEl) disclaimerEl.textContent = '⚠️ ' + forecast.disclaimer;
     }
+    
+    // 사업 분야 요약
+    displayBusinessSummary(analysis.business_summary);
+    
+    // 요청사항 답변
+    displayRequestAnswer(analysis.request_answer);
+}
+
+// 사업 분야 요약 표시
+function displayBusinessSummary(businessSummary) {
+    const container = document.getElementById('businessSummary');
+    if (!container) return;
+    
+    if (!businessSummary) {
+        container.innerHTML = '<p style="color: #64748b; text-align: center;">사업 분야 정보를 불러올 수 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="business-grid">
+            <div class="business-item">
+                <div class="business-item-title"><i class="fas fa-industry"></i> 업종</div>
+                <div class="business-item-content">${businessSummary.industry || '-'}</div>
+            </div>
+            <div class="business-item">
+                <div class="business-item-title"><i class="fas fa-box"></i> 주력 상품/서비스</div>
+                <div class="business-item-content">${businessSummary.main_products || '-'}</div>
+            </div>
+            <div class="business-item">
+                <div class="business-item-title"><i class="fas fa-users"></i> 주요 경쟁사</div>
+                <div class="business-item-content">${businessSummary.competitors || '-'}</div>
+            </div>
+            <div class="business-item">
+                <div class="business-item-title"><i class="fas fa-chart-area"></i> 시장 동향</div>
+                <div class="business-item-content">${businessSummary.market_trend || '-'}</div>
+            </div>
+        </div>
+    `;
+}
+
+// 요청사항 답변 표시
+function displayRequestAnswer(requestAnswer) {
+    const section = document.getElementById('section-request');
+    const questionEl = document.getElementById('requestQuestion');
+    const loadingEl = document.getElementById('answerLoading');
+    const contentEl = document.getElementById('answerContent');
+    
+    if (!section || !requestAnswer || !requestAnswer.question) {
+        return; // 요청사항이 없으면 섹션 숨김 유지
+    }
+    
+    // 요청사항 섹션 표시
+    section.classList.remove('hidden');
+    
+    if (questionEl) questionEl.textContent = requestAnswer.question;
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (contentEl) contentEl.textContent = requestAnswer.answer || '답변을 생성하지 못했습니다.';
 }
 
 function updateBreakdown(type, score, grade) {
@@ -690,12 +1049,30 @@ function updateNewsWithSentiment(topNews) {
 
 let currentChartMode = '1y'; // '1y' or 'forecast'
 
+// 토글 스위치로 차트 변경
+function toggleForecastChart() {
+    const toggle = document.getElementById('forecastToggle');
+    showChart(toggle.checked ? 'forecast' : '1y');
+}
+
 function showChart(mode) {
     currentChartMode = mode;
     
-    // 버튼 활성화 상태 변경
-    document.getElementById('chart1y').classList.toggle('active', mode === '1y');
-    document.getElementById('chartForecast').classList.toggle('active', mode === 'forecast');
+    // 버튼 상태 및 텍스트 업데이트
+    const btn1y = document.getElementById('chart1y');
+    const btnForecast = document.getElementById('chartForecast');
+    
+    if (mode === '1y') {
+        btn1y.classList.add('active');
+        btnForecast.classList.remove('active');
+        btn1y.textContent = '1년 실적';
+        btnForecast.textContent = '1년 예측보기';
+    } else {
+        btn1y.classList.remove('active');
+        btnForecast.classList.add('active');
+        btn1y.textContent = '현재 주가 보기';
+        btnForecast.textContent = '1년 예측';
+    }
     
     // 범례 및 면책조항 표시
     const legend = document.getElementById('chartLegend');
@@ -711,7 +1088,7 @@ function showChart(mode) {
         disclaimer.style.display = 'none';
     } else {
         legend.innerHTML = `
-            <span class="legend-item"><span class="dot price"></span> 실제 주가</span>
+            <span class="legend-item"><span class="dot price"></span> 월평균 주가</span>
             <span class="legend-item"><span class="dot forecast"></span> AI 예측</span>
         `;
         disclaimer.style.display = 'block';
@@ -803,34 +1180,33 @@ function createYearlyChart(ctx, priceHistory) {
 }
 
 function createForecastChart(ctx, priceHistory) {
-    // 최근 6개월 + 1년 예측 차트
+    // 월별 평균으로 변환 + 1년 예측 차트
     const forecast = aiAnalysis?.price_forecast || {};
     
-    // 최근 6개월 데이터 추출
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    
-    const recentHistory = priceHistory.filter(p => new Date(p.date) >= sixMonthsAgo);
-    const recentLabels = recentHistory.map(p => p.date);
-    const recentPrices = recentHistory.map(p => p.close);
+    // 과거 12개월 데이터를 월별 평균으로 변환
+    const monthlyData = aggregateToMonthly(priceHistory);
+    const monthlyLabels = monthlyData.map(m => m.label);
+    const monthlyPrices = monthlyData.map(m => m.avgPrice);
     
     // 월별 예측 데이터 생성
     const forecastLabels = [];
     const forecastPrices = [];
     
     if (forecast['3month'] && forecast['6month'] && forecast['12month']) {
-        const lastDate = new Date(priceHistory[priceHistory.length - 1].date);
-        const lastPrice = recentPrices[recentPrices.length - 1];
+        const lastLabel = monthlyLabels[monthlyLabels.length - 1];
+        const lastPrice = monthlyPrices[monthlyPrices.length - 1];
         
         // 시작점
-        forecastLabels.push(priceHistory[priceHistory.length - 1].date);
+        forecastLabels.push(lastLabel);
         forecastPrices.push(lastPrice);
         
         // 월별 보간 (1~12개월)
+        const lastDate = new Date(monthlyData[monthlyData.length - 1].date);
         for (let i = 1; i <= 12; i++) {
             const futureDate = new Date(lastDate);
             futureDate.setMonth(futureDate.getMonth() + i);
-            forecastLabels.push(futureDate.toISOString().split('T')[0]);
+            const monthLabel = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}`;
+            forecastLabels.push(monthLabel);
             
             // 보간 계산
             let price;
@@ -845,8 +1221,8 @@ function createForecastChart(ctx, priceHistory) {
         }
     }
     
-    // 전체 라벨 (실제 + 예측)
-    const allLabels = [...recentLabels, ...forecastLabels.slice(1)];
+    // 전체 라벨 (과거 월별 + 예측)
+    const allLabels = [...monthlyLabels, ...forecastLabels.slice(1)];
     
     priceChart = new Chart(ctx, {
         type: 'line',
@@ -854,31 +1230,62 @@ function createForecastChart(ctx, priceHistory) {
             labels: allLabels,
             datasets: [
                 {
-                    label: '실제 주가',
-                    data: [...recentPrices, ...Array(forecastLabels.length - 1).fill(null)],
+                    label: '월평균 주가',
+                    data: [...monthlyPrices, ...Array(forecastLabels.length - 1).fill(null)],
                     borderColor: '#0066cc',
                     backgroundColor: 'rgba(0, 102, 204, 0.1)',
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.1,
-                    pointRadius: 0,
-                    pointHoverRadius: 4
+                    tension: 0.2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#0066cc'
                 },
                 {
                     label: 'AI 예측',
-                    data: [...Array(recentPrices.length - 1).fill(null), ...forecastPrices],
+                    data: [...Array(monthlyPrices.length - 1).fill(null), ...forecastPrices],
                     borderColor: '#94a3b8',
                     borderWidth: 2,
                     borderDash: [5, 5],
                     fill: false,
                     tension: 0.3,
-                    pointRadius: 3,
+                    pointRadius: 4,
                     pointBackgroundColor: '#94a3b8'
                 }
             ]
         },
         options: getChartOptions()
     });
+}
+
+// 일별 데이터를 월별 평균으로 변환
+function aggregateToMonthly(priceHistory) {
+    const monthlyMap = new Map();
+    
+    priceHistory.forEach(p => {
+        const date = new Date(p.date);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (!monthlyMap.has(monthKey)) {
+            monthlyMap.set(monthKey, { prices: [], date: date });
+        }
+        monthlyMap.get(monthKey).prices.push(p.close);
+    });
+    
+    const result = [];
+    monthlyMap.forEach((value, key) => {
+        const avgPrice = Math.round(value.prices.reduce((a, b) => a + b, 0) / value.prices.length);
+        result.push({
+            label: key,
+            date: value.date,
+            avgPrice: avgPrice
+        });
+    });
+    
+    // 날짜순 정렬
+    result.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    return result;
 }
 
 function getChartOptions() {
@@ -1082,12 +1489,64 @@ function showLoading(show) {
     const overlay = document.getElementById('loadingOverlay');
     if (show) {
         overlay.classList.remove('hidden');
+        resetProgressSteps();
         startLoadingMessages();
     } else {
         overlay.classList.add('hidden');
         stopLoadingMessages();
         // 섹션 순차 표시 애니메이션
         revealSections();
+    }
+}
+
+// 프로세스 바 초기화
+function resetProgressSteps() {
+    const progressFill = document.getElementById('loadingProgressFill');
+    if (progressFill) progressFill.style.width = '0%';
+    
+    ['step1', 'step2', 'step3', 'step4'].forEach(id => {
+        const step = document.getElementById(id);
+        if (step) {
+            step.classList.remove('active', 'completed');
+        }
+    });
+}
+
+// 프로세스 단계 업데이트
+function updateProgressStep(stepNum, isCompleted = false) {
+    const progressFill = document.getElementById('loadingProgressFill');
+    const stepEl = document.getElementById(`step${stepNum}`);
+    
+    // 프로그레스 바 업데이트
+    const progressPercent = {
+        1: 25,
+        2: 50,
+        3: 75,
+        4: 100
+    };
+    
+    if (progressFill && progressPercent[stepNum]) {
+        progressFill.style.width = `${progressPercent[stepNum]}%`;
+    }
+    
+    // 이전 단계들 완료 처리
+    for (let i = 1; i < stepNum; i++) {
+        const prevStep = document.getElementById(`step${i}`);
+        if (prevStep) {
+            prevStep.classList.remove('active');
+            prevStep.classList.add('completed');
+        }
+    }
+    
+    // 현재 단계 처리
+    if (stepEl) {
+        if (isCompleted) {
+            stepEl.classList.remove('active');
+            stepEl.classList.add('completed');
+        } else {
+            stepEl.classList.add('active');
+            stepEl.classList.remove('completed');
+        }
     }
 }
 
@@ -1129,19 +1588,21 @@ function updateLoadingMessage() {
 }
 
 function updateLoadingStep(step, progress) {
-    // 특정 단계별 메시지 설정
-    const stepMessages = {
-        10: 1,   // KRX
-        30: 2,   // DART
-        50: 3,   // 뉴스
-        70: 4,   // AI 분석
-        90: 5,   // 차트
-        100: 6   // 완료
-    };
+    // 로딩 메시지 업데이트
+    const loadingStepEl = document.getElementById('loadingStep');
+    if (loadingStepEl) {
+        loadingStepEl.textContent = step;
+    }
     
-    if (stepMessages[progress] !== undefined) {
-        loadingMessageIndex = stepMessages[progress];
-        updateLoadingMessage();
+    // 프로세스 단계 업데이트 (진행률 기준)
+    if (progress <= 25) {
+        updateProgressStep(1, progress >= 25);  // 데이터 수집
+    } else if (progress <= 50) {
+        updateProgressStep(2, progress >= 50);  // 지표 분석
+    } else if (progress <= 75) {
+        updateProgressStep(3, progress >= 75);  // AI 분석
+    } else {
+        updateProgressStep(4, progress >= 100); // 보고서 생성
     }
 }
 

@@ -16,12 +16,39 @@
     <!-- 로딩 오버레이 -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
+            <!-- 두근두근 대표 아이콘 -->
+            <div class="loading-icon-pulse">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            
             <p class="loading-text" id="loadingText">
                 <span class="company-highlight">{{ company_name }}</span>
             </p>
             <p class="loading-step" id="loadingStep">보고서를 불러오고 있어요</p>
-            <div class="loading-dots">
-                <span></span><span></span><span></span>
+            
+            <!-- 프로세스 바 -->
+            <div class="loading-progress-wrapper">
+                <div class="loading-progress-bar">
+                    <div class="loading-progress-fill" id="loadingProgressFill"></div>
+                </div>
+                <div class="loading-progress-steps">
+                    <div class="progress-step" id="step1">
+                        <div class="step-icon"><i class="fas fa-database"></i></div>
+                        <span>데이터 수집</span>
+                    </div>
+                    <div class="progress-step" id="step2">
+                        <div class="step-icon"><i class="fas fa-chart-bar"></i></div>
+                        <span>지표 분석</span>
+                    </div>
+                    <div class="progress-step" id="step3">
+                        <div class="step-icon"><i class="fas fa-robot"></i></div>
+                        <span>AI 분석</span>
+                    </div>
+                    <div class="progress-step" id="step4">
+                        <div class="step-icon"><i class="fas fa-file-alt"></i></div>
+                        <span>보고서 생성</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -40,9 +67,6 @@
         </div>
         <div class="header-right">
             <span class="generated-time" id="generatedTime"></span>
-            <button class="btn-download" onclick="downloadPDF()" id="downloadPdfBtn" disabled>
-                <i class="fas fa-file-pdf"></i> PDF 저장
-            </button>
             <button class="btn-refresh" onclick="regenerateReport()">
                 <i class="fas fa-sync-alt"></i> 새로고침
             </button>
@@ -51,20 +75,47 @@
 
     <!-- 좌측 네비게이션 -->
     <nav class="report-nav" id="reportNav">
+        <button class="nav-toggle-btn" onclick="toggleNav()" title="목차 숨기기">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="nav-content">
         <div class="nav-title">목차</div>
         <ul class="nav-list">
             <li><a href="#section-summary" class="nav-link active"><i class="fas fa-star"></i> 핵심 요약</a></li>
             <li><a href="#section-ai-summary" class="nav-link"><i class="fas fa-robot"></i> AI 종합 평가</a></li>
+            <li><a href="#section-request" class="nav-link"><i class="fas fa-question-circle"></i> 요청사항 답변</a></li>
             <li><a href="#section-info" class="nav-link"><i class="fas fa-building"></i> 기업 정보</a></li>
+            <li><a href="#section-business" class="nav-link"><i class="fas fa-briefcase"></i> 사업 분야</a></li>
+            <li><a href="#section-technical" class="nav-link"><i class="fas fa-chart-bar"></i> 기술적 지표</a></li>
             <li><a href="#section-valuation" class="nav-link"><i class="fas fa-calculator"></i> 밸류에이션</a></li>
             <li><a href="#section-ratios" class="nav-link"><i class="fas fa-balance-scale"></i> 재무비율</a></li>
             <li><a href="#section-chart" class="nav-link"><i class="fas fa-chart-line"></i> 주가 차트</a></li>
-            <li><a href="#section-technical" class="nav-link"><i class="fas fa-chart-bar"></i> 기술적 지표</a></li>
-            <li><a href="#section-news" class="nav-link"><i class="fas fa-newspaper"></i> 뉴스 분석</a></li>
+            <li><a href="#section-forecast" class="nav-link"><i class="fas fa-magic"></i> 가격 예측</a></li>
             <li><a href="#section-ai-detail" class="nav-link"><i class="fas fa-clipboard-list"></i> AI 상세 평가</a></li>
-            <li><a href="#section-forecast" class="nav-link"><i class="fas fa-crystal-ball"></i> 가격 예측</a></li>
+            <li><a href="#section-news" class="nav-link"><i class="fas fa-newspaper"></i> 뉴스 분석</a></li>
             <li><a href="#section-disclosure" class="nav-link"><i class="fas fa-file-alt"></i> 공시 정보</a></li>
         </ul>
+        </div>
+        <div class="nav-collapsed-icons">
+            <button class="nav-expand-btn" onclick="toggleNav()" title="목차 열기">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-icon-list">
+                <li><a href="#section-summary" title="핵심 요약"><i class="fas fa-star"></i></a></li>
+                <li><a href="#section-ai-summary" title="AI 종합 평가"><i class="fas fa-robot"></i></a></li>
+                <li><a href="#section-request" title="요청사항 답변"><i class="fas fa-question-circle"></i></a></li>
+                <li><a href="#section-info" title="기업 정보"><i class="fas fa-building"></i></a></li>
+                <li><a href="#section-business" title="사업 분야"><i class="fas fa-briefcase"></i></a></li>
+                <li><a href="#section-technical" title="기술적 지표"><i class="fas fa-chart-bar"></i></a></li>
+                <li><a href="#section-valuation" title="밸류에이션"><i class="fas fa-calculator"></i></a></li>
+                <li><a href="#section-ratios" title="재무비율"><i class="fas fa-balance-scale"></i></a></li>
+                <li><a href="#section-chart" title="주가 차트"><i class="fas fa-chart-line"></i></a></li>
+                <li><a href="#section-forecast" title="가격 예측"><i class="fas fa-magic"></i></a></li>
+                <li><a href="#section-ai-detail" title="AI 상세 평가"><i class="fas fa-clipboard-list"></i></a></li>
+                <li><a href="#section-news" title="뉴스 분석"><i class="fas fa-newspaper"></i></a></li>
+                <li><a href="#section-disclosure" title="공시 정보"><i class="fas fa-file-alt"></i></a></li>
+            </ul>
+        </div>
     </nav>
 
     <!-- 메인 콘텐츠 -->
@@ -96,7 +147,7 @@
                 
                 <!-- 투자 점수 카드 -->
                 <div class="summary-card score-card">
-                    <div class="card-label">투자 점수</div>
+                    <div class="card-label" id="scoreLabel">투자 점수</div>
                     <div class="score-circle" id="investmentScore">
                         <svg viewBox="0 0 100 100">
                             <circle class="score-bg" cx="50" cy="50" r="45"/>
@@ -104,7 +155,6 @@
                         </svg>
                         <span class="score-value" id="scoreValue">-</span>
                     </div>
-                    <div class="card-grade" id="investmentGrade">-</div>
                 </div>
                 
                 <!-- 투자 의견 카드 -->
@@ -126,6 +176,18 @@
             </div>
         </section>
 
+        <!-- 섹션 2-1: 요청사항 답변 -->
+        <section class="section section-request hidden" id="section-request">
+            <h2 class="section-title"><i class="fas fa-question-circle"></i> 요청사항 답변</h2>
+            <div class="request-question" id="requestQuestion"></div>
+            <div class="request-answer">
+                <div class="answer-loading" id="answerLoading">
+                    <i class="fas fa-spinner fa-spin"></i> 답변을 생성 중입니다...
+                </div>
+                <div class="answer-content" id="answerContent"></div>
+            </div>
+        </section>
+
         <!-- 섹션 3: 기업 기본 정보 -->
         <section class="section section-info" id="section-info">
             <h2 class="section-title"><i class="fas fa-building"></i> 기업 기본 정보</h2>
@@ -135,6 +197,16 @@
                         <tr><td>로딩 중...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- 섹션 3-1: 사업 분야 요약 -->
+        <section class="section section-business" id="section-business">
+            <h2 class="section-title"><i class="fas fa-briefcase"></i> 사업 분야 요약</h2>
+            <div class="business-summary-content" id="businessSummary">
+                <div class="business-loading">
+                    <i class="fas fa-spinner fa-spin"></i> 사업 분야 정보를 분석 중입니다...
+                </div>
             </div>
         </section>
 
@@ -188,29 +260,64 @@
             <h2 class="section-title"><i class="fas fa-calculator"></i> 밸류에이션</h2>
             <div class="valuation-grid">
                 <div class="val-card">
-                    <div class="val-label">PER</div>
+                    <div class="val-label">
+                        PER
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">주가수익비율 = 주가 ÷ 주당순이익(EPS). 낮을수록 저평가 (업종평균 비교 필요)</span>
+                        </span>
+                    </div>
                     <div class="val-value" id="perValue">-</div>
                     <div class="val-desc">주가수익비율</div>
                 </div>
                 <div class="val-card">
-                    <div class="val-label">PBR</div>
+                    <div class="val-label">
+                        PBR
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">주가순자산비율 = 주가 ÷ 주당순자산(BPS). 1배 미만이면 자산가치 대비 저평가</span>
+                        </span>
+                    </div>
                     <div class="val-value" id="pbrValue">-</div>
                     <div class="val-desc">주가순자산비율</div>
                 </div>
                 <div class="val-card">
-                    <div class="val-label">EPS</div>
+                    <div class="val-label">
+                        EPS
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">주당순이익 = 당기순이익 ÷ 발행주식수. 기업의 1주당 수익</span>
+                        </span>
+                    </div>
                     <div class="val-value" id="epsValue">-</div>
                     <div class="val-desc">주당순이익</div>
                 </div>
                 <div class="val-card">
-                    <div class="val-label">BPS</div>
+                    <div class="val-label">
+                        BPS
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">주당순자산 = 자본총계 ÷ 발행주식수. 기업 청산 시 1주당 가치</span>
+                        </span>
+                    </div>
                     <div class="val-value" id="bpsValue">-</div>
                     <div class="val-desc">주당순자산</div>
                 </div>
                 <div class="val-card">
-                    <div class="val-label">배당수익률</div>
+                    <div class="val-label">
+                        배당수익률
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">= 주당배당금 ÷ 주가 × 100. 투자금 대비 배당 수익</span>
+                        </span>
+                    </div>
                     <div class="val-value" id="divYield">-</div>
                     <div class="val-desc">연간 배당률</div>
+                </div>
+                <div class="val-card">
+                    <div class="val-label">
+                        주당배당금
+                        <span class="val-tooltip"><i class="fas fa-question-circle"></i>
+                            <span class="val-tooltip-text">1주당 지급되는 현금배당액 (DART 사업보고서 기준)</span>
+                        </span>
+                    </div>
+                    <div class="val-value" id="dpsValue">-</div>
+                    <div class="val-desc">현금배당</div>
                 </div>
                 <div class="val-card">
                     <div class="val-label">52주 범위</div>
@@ -222,165 +329,10 @@
 
         <!-- 섹션 5-1: 재무비율 분석 -->
         <section class="section section-financial-ratios" id="section-ratios">
-            <h2 class="section-title"><i class="fas fa-balance-scale"></i> 재무비율 분석</h2>
-            
-            <!-- 유동성 지표 -->
-            <div class="ratio-category">
-                <h3 class="ratio-category-title">유동성 지표 (단기 채무 상환 능력)</h3>
-                <div class="ratio-grid">
-                    <div class="ratio-card" id="currentRatioCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">유동비율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 150~200% / 유동자산÷유동부채×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="currentRatio">-</div>
-                        <div class="ratio-status" id="currentRatioStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="quickRatioCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">당좌비율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 100% 이상 / (유동자산-재고)÷유동부채×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="quickRatio">-</div>
-                        <div class="ratio-status" id="quickRatioStatus">-</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 안정성 지표 -->
-            <div class="ratio-category">
-                <h3 class="ratio-category-title">안정성 지표 (재무구조 안정성)</h3>
-                <div class="ratio-grid">
-                    <div class="ratio-card" id="debtRatioCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">부채비율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 100% 이하 / 부채총계÷자본총계×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="debtRatio">-</div>
-                        <div class="ratio-status" id="debtRatioStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="equityRatioCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">자기자본비율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 50% 이상 / 자본총계÷자산총계×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="equityRatio">-</div>
-                        <div class="ratio-status" id="equityRatioStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="interestCoverageCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">이자보상배율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 3배 이상 / 영업이익÷이자비용</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="interestCoverage">-</div>
-                        <div class="ratio-status" id="interestCoverageStatus">-</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 수익성 지표 -->
-            <div class="ratio-category">
-                <h3 class="ratio-category-title">수익성 지표 (이익 창출 능력)</h3>
-                <div class="ratio-grid">
-                    <div class="ratio-card" id="roeCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">ROE (자기자본이익률)</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 10% 이상 / 당기순이익÷자기자본×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="roe">-</div>
-                        <div class="ratio-status" id="roeStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="roaCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">ROA (총자산이익률)</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">적정: 5% 이상 / 당기순이익÷총자산×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="roa">-</div>
-                        <div class="ratio-status" id="roaStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="npmCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">순이익률</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">업종 평균과 비교 필요 / 당기순이익÷매출액×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="npm">-</div>
-                        <div class="ratio-status" id="npmStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="opmCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">영업이익률</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">업종 평균과 비교 필요 / 영업이익÷매출액×100</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="opm">-</div>
-                        <div class="ratio-status" id="opmStatus">-</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 활동성 지표 -->
-            <div class="ratio-category">
-                <h3 class="ratio-category-title">활동성 지표 (자산 활용 효율성)</h3>
-                <div class="ratio-grid">
-                    <div class="ratio-card" id="assetTurnoverCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">총자산회전율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">높을수록 양호 / 매출액÷총자산</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="assetTurnover">-</div>
-                        <div class="ratio-status" id="assetTurnoverStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="inventoryTurnoverCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">재고자산회전율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">높을수록 양호 / 매출원가÷평균재고자산</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="inventoryTurnover">-</div>
-                        <div class="ratio-status" id="inventoryTurnoverStatus">-</div>
-                    </div>
-                    <div class="ratio-card" id="receivableTurnoverCard">
-                        <div class="ratio-header">
-                            <span class="ratio-name">매출채권회전율</span>
-                            <span class="ratio-tooltip">
-                                <i class="fas fa-question-circle"></i>
-                                <span class="tooltip-text">높을수록 양호 / 매출액÷평균매출채권</span>
-                            </span>
-                        </div>
-                        <div class="ratio-value" id="receivableTurnover">-</div>
-                        <div class="ratio-status" id="receivableTurnoverStatus">-</div>
-                    </div>
+            <h2 class="section-title" id="ratiosSectionTitle"><i class="fas fa-balance-scale"></i> 재무비율 분석</h2>
+            <div class="ratios-container" id="ratiosContainer">
+                <div class="ratio-loading">
+                    <i class="fas fa-spinner fa-spin"></i> 재무비율 데이터를 불러오는 중...
                 </div>
             </div>
         </section>
@@ -406,30 +358,7 @@
             <p class="chart-disclaimer" id="chartDisclaimer" style="display: none;">⚠️ 미래 주가 예측은 AI 분석 기반 참고 자료이며, 실제 주가와 다를 수 있습니다.</p>
         </section>
 
-        <!-- 섹션: 뉴스 분석 -->
-        <section class="section section-news" id="section-news">
-            <h2 class="section-title"><i class="fas fa-newspaper"></i> 뉴스 분석</h2>
-            <div class="news-header">
-                <div class="news-score-card">
-                    <div class="news-score-label">뉴스 감성 점수</div>
-                    <div class="news-score-value" id="newsScore">-</div>
-                    <div class="news-sentiment" id="newsSentiment">분석 중</div>
-                </div>
-            </div>
-            <div class="news-list" id="newsList">
-                <div class="news-item loading">뉴스 로딩 중...</div>
-            </div>
-        </section>
-
-        <!-- 섹션 7: AI 상세 평가 -->
-        <section class="section section-ai-detail" id="section-ai-detail">
-            <h2 class="section-title"><i class="fas fa-clipboard-list"></i> AI 상세 평가</h2>
-            <div class="detail-accordion" id="detailAccordion">
-                <!-- 동적으로 생성됨 -->
-            </div>
-        </section>
-
-        <!-- 섹션 9: 가격 예측 -->
+        <!-- 섹션: 가격 예측 -->
         <section class="section section-forecast" id="section-forecast">
             <h2 class="section-title"><i class="fas fa-crystal-ball"></i> AI 가격 예측</h2>
             <div class="forecast-cards">
@@ -451,15 +380,36 @@
             </p>
         </section>
 
+        <!-- 섹션: AI 상세 평가 -->
+        <section class="section section-ai-detail" id="section-ai-detail">
+            <h2 class="section-title"><i class="fas fa-clipboard-list"></i> AI 상세 평가</h2>
+            <div class="detail-accordion" id="detailAccordion">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </section>
+
+        <!-- 섹션: 뉴스 분석 -->
+        <section class="section section-news" id="section-news">
+            <h2 class="section-title"><i class="fas fa-newspaper"></i> 뉴스 분석</h2>
+            <div class="news-header">
+                <div class="news-score-card">
+                    <div class="news-score-label">뉴스 감성 점수</div>
+                    <div class="news-score-value" id="newsScore">-</div>
+                    <div class="news-sentiment" id="newsSentiment">분석 중</div>
+                </div>
+                <div class="news-summary-text" id="newsSummaryText">뉴스 종합 평가를 불러오는 중...</div>
+            </div>
+            <div class="news-list" id="newsList">
+                <div class="news-item loading">뉴스 로딩 중...</div>
+            </div>
+        </section>
+
         <!-- 섹션 10: 공시 정보 -->
         <section class="section section-disclosure" id="section-disclosure">
             <h2 class="section-title"><i class="fas fa-file-alt"></i> 최근 공시</h2>
             <div class="disclosure-list" id="disclosureList">
                 <div class="disclosure-item loading">공시 로딩 중...</div>
             </div>
-            <a href="#" class="btn-dart" id="dartLink" target="_blank">
-                <i class="fas fa-external-link-alt"></i> DART에서 정기보고서 원본 보기
-            </a>
         </section>
 
         <!-- PDF 다운로드 섹션 -->
@@ -478,11 +428,17 @@
 
     <!-- AI 채팅창 (PC & 모바일) -->
     <aside class="chat-sidebar" id="chatSidebar">
+        <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()" title="상담 숨기기">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="chat-collapsed-icon">
+            <button class="chat-reopen-btn" onclick="toggleChat()" title="상담 열기">
+                <i class="fas fa-comments"></i>
+            </button>
+        </div>
+        <div class="chat-content">
         <div class="chat-header">
             <h3><i class="fas fa-comments"></i> AI 상담</h3>
-            <button class="chat-close" onclick="toggleMobileChat()">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="chat-message bot">
@@ -497,6 +453,7 @@
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
+        </div>
     </aside>
 </div>
 
@@ -506,7 +463,8 @@
         name: "{{ company_name }}",
         ticker: "{{ ticker }}",
         corpCode: "{{ corp_code }}",
-        market: "{{ market }}"
+        market: "{{ market }}",
+        requestText: "{{ request_text|default('', true) }}"
     };
 </script>
 {% endblock %}

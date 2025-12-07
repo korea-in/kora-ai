@@ -80,22 +80,22 @@
     gap: 20px;
 }
 
-.notification-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    background: var(--bg-tertiary);
+/* 크레딧 배지 */
+.credit-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
-    color: var(--text-secondary);
-    transition: all 0.3s ease;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 14px;
+    color: #1A1D29;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
-.notification-btn:hover {
-    background: var(--primary-blue);
-    color: var(--text-white);
+.credit-badge i {
+    font-size: 14px;
 }
 
 .notification-badge {
@@ -432,154 +432,6 @@
     padding: 24px;
     text-align: center;
     color: var(--text-tertiary);
-}
-
-/* ============================================
-   RANDOM RECOMMEND SECTION
-   ============================================ */
-
-.random-recommend-section {
-    width: 100%;
-    max-width: 560px;
-    margin-bottom: 24px;
-}
-
-.random-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.random-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-.random-title i {
-    color: var(--accent-warning);
-}
-
-.random-refresh-btn {
-    width: 32px;
-    height: 32px;
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    color: var(--text-tertiary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.random-refresh-btn:hover {
-    background: var(--primary-blue);
-    color: white;
-}
-
-/* Random Chips Container - Horizontal Scroll with Fade Effect */
-.random-chips-wrapper {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Left fade effect */
-.random-chips-wrapper::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to right, var(--bg-primary) 0%, transparent 100%);
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-/* Right fade effect */
-.random-chips-wrapper::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%);
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-/* Show fade effects when content overflows */
-.random-chips-wrapper.has-overflow-left::before {
-    opacity: 1;
-}
-
-.random-chips-wrapper.has-overflow-right::after {
-    opacity: 1;
-}
-
-/* Random Chips - Horizontal Scroll */
-.random-chips {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 10px;
-    justify-content: center;
-    min-height: 44px;
-    overflow-x: auto;
-    padding: 4px 0;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-}
-
-.random-chips::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-}
-
-.random-chip {
-    padding: 10px 16px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-full);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.4s ease;
-    opacity: 1;
-    white-space: nowrap;
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.random-chip:hover {
-    border-color: var(--primary-blue);
-    color: var(--primary-blue);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-.random-chip.fade-out {
-    opacity: 0;
-    transform: translateY(-10px);
-}
-
-.random-chip.fade-in {
-    animation: chipFadeIn 0.4s ease forwards;
-}
-
-@keyframes chipFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================

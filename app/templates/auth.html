@@ -49,6 +49,13 @@
                     <span class="feature-text">AI 기업 분석 리포트 자동 생성</span>
                 </div>
             </div>
+            
+            <!-- 서비스 소개 버튼 -->
+            <a href="/about" class="service-intro-btn">
+                <i class="fas fa-info-circle"></i>
+                <span>서비스 소개 보기</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
     </div>
 
@@ -224,5 +231,30 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Firebase SDK for Google Login -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script>
+    // Firebase 설정
+    const firebaseConfig = {
+        apiKey: "{{ firebase_config.api_key | default('', true) }}",
+        authDomain: "{{ firebase_config.auth_domain | default('', true) }}",
+        projectId: "{{ firebase_config.project_id | default('', true) }}",
+    };
+    
+    console.log('[Firebase] Config:', firebaseConfig);
+    
+    // Firebase 초기화
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== '') {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('[Firebase] Initialized successfully');
+        } catch (e) {
+            console.error('[Firebase] Init error:', e);
+        }
+    } else {
+        console.warn('[Firebase] API Key not configured');
+    }
+</script>
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 {% endblock %}

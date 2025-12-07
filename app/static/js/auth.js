@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     initAuthPage();
+    initSocialLogin();
     checkAutoLogin();
 });
 
@@ -429,6 +430,75 @@ function setButtonLoading(btn, loading) {
         const span = btn.querySelector('span');
         if (span && span.dataset.original) {
             span.textContent = span.dataset.original;
+        }
+    }
+}
+
+// ============================================
+// 소셜 로그인
+// ============================================
+
+function initSocialLogin() {
+    // 카카오 로그인
+    const kakaoBtn = document.querySelector('.social-btn.kakao');
+    if (kakaoBtn) {
+        kakaoBtn.addEventListener('click', function() {
+            window.location.href = '/auth/kakao';
+        });
+    }
+    
+    // 네이버 로그인
+    const naverBtn = document.querySelector('.social-btn.naver');
+    if (naverBtn) {
+        naverBtn.addEventListener('click', function() {
+            window.location.href = '/auth/naver';
+        });
+    }
+    
+    // 구글 로그인 (Firebase)
+    const googleBtn = document.querySelector('.social-btn.google');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', handleGoogleLogin);
+    }
+}
+
+async function handleGoogleLogin() {
+    try {
+        // Firebase Auth 사용
+        if (typeof firebase === 'undefined') {
+            showMessage('구글 로그인을 초기화하는 중입니다. 잠시 후 다시 시도해주세요.', 'error');
+            return;
+        }
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth().signInWithPopup(provider);
+        
+        // ID 토큰 가져오기
+        const idToken = await result.user.getIdToken();
+        
+        // 서버에 토큰 전송
+        const response = await fetch('/auth/google/callback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id_token: idToken })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('구글 로그인 성공!', 'success');
+            window.location.href = data.redirect || '/main';
+        } else {
+            showMessage(data.error || '구글 로그인에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        console.error('Google login error:', error);
+        if (error.code === 'auth/popup-closed-by-user') {
+            showMessage('로그인이 취소되었습니다.', 'error');
+        } else {
+            showMessage('구글 로그인 중 오류가 발생했습니다.', 'error');
         }
     }
 }
